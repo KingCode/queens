@@ -1,7 +1,7 @@
 queens
 ======
 
-A Clojure implementation of the Queens on a chessboard game: given N, place N queens on a N x N squares grid such that:
+A Clojure implementation of a variant of the Queens on a Chessboard game: given N, place N queens on a N x N squares grid such that:
  - at most one queen occupies any diagonal, row or column
  - at most two queens can occupy any other line.
 
