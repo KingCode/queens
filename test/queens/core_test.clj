@@ -121,3 +121,15 @@
         (is (not (same-baseline-any? [10 11])))
         (is (same-baseline-any? [8 7]))
         (is (not (same-baseline-any? [6 10])))))
+
+(deftest id-generator-test
+    (testing "Should return a function which increments an id atomically and returns a new id on demand" 
+        (let [nextId (id-generator)]
+            (is (= 1 (nextId)))
+            (is (= 2 (nextId)))
+            (is (= 3 (nextId))))))
+
+(def-btest verify-test 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
+    (testing "Should successfully verify a compliant candidate solution"
+        (is (verify))))    
+
