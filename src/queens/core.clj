@@ -48,9 +48,14 @@
 (defmacro coll-pred [coll pred]
     `(< 0 (count (filter #(~pred %) ~coll))))    
 
-(defn same? [[x1 y1] [x2 y2]] (and (= x1 x2) (= y1 y2)))
+(defn same? [ c1 c2 ]
+	(cond (empty? c1) false
+	      (empty? c2) false
+	 :else
+	 	(let [[x1 y1] c1 [x2 y2] c2]
+			(and (= x1 x2) (= y1 y2)))))
 
-(defn contains-cell? [coll elem] (coll-pred coll same?)) 
+(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
 
 (defn occupied? [[x y]]  (coll-pred (:queens @state)
                             #(and (= x (first %)) (= y (second %))) ))
@@ -64,9 +69,11 @@
 (defn same-baseline? [c1 c2]
         (or (same-row? c1 c2) (same-col? c1 c2) (same-diag? c1 c2)))
 
-;; Returns true if cell lies on the same-baseline as one of the cells in coll
+;; Returns true if cell lies on the same-baseline as one of the cells in coll, and false otherwise.
+;; If coll is empty false is returned
 (defn same-baseline-from? [coll cell]
-    (cond (same-baseline? (first coll) cell) true
+    (cond (empty? coll) false
+    	  (same-baseline? (first coll) cell) true
           (= 1 (count coll)) false
           :else
             (recur (next coll) cell)))
@@ -97,9 +104,10 @@
 ;; Places a new Queen on the grid
 (defn add-queen [[x y]] (swap! state #(assoc  % :queens (conj (:queens %) [x y]))))
 
-;; Verifies independently (without changing the state) that all queens currently in (:queens @state) 
-;; comply with the rules.
-;; TODO
+;; Returns complete lines defined by each element of 'coll' and 'cell'
+(defn all-lines-between [ coll cell ] 
+	(map #(line-with-acc % cell) coll))
+
 
 ;; Verifies that 'remainder' cells comply with the rules, assuming 'compliant' cells have been verified.
 ;; Both arguments are assumed to be sorted in row column order. The last argument stores non-baseline
@@ -114,9 +122,13 @@
        (cond (empty? remainder) true
           (contains-cell? usedlines-cells candidate) false
           (same-baseline-from? compliant candidate) false
+		  ;;MISSING: check for new lines and update usedlines-cells          
           :else
             (recur (conj compliant candidate) (next remainder) (conj usedlines-cells candidate)))))
 
+;; Verifies independently (without changing the state) that all queens currently in (:queens @state) 
+;; comply with the rules.
+            
     ([] (verify [] (:queens @state) [])))
 
           

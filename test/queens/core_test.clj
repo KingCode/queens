@@ -21,6 +21,34 @@
         (is (not (coll-pred [1 2 3] #(= % 5) )))
         (is (coll-pred [1 2 3] #(< % 10) ))
         (is (not (coll-pred [1 2 3] #(< % 1) )))))
+        
+(deftest same?-test
+	(testing "Should return true iff two cells have equal coordinates, and handle nulls/empties with false returns"
+		(is (same? [1 1] [ 1 1]))
+		(is (same? [2 3] [2 3]))
+		(is (not (same? [4 5] [5 4])))
+		(is (not (same? [] [1 2])))
+		(is (not (same? [4 6] [])))
+		(is (not (same? nil [1 2])))
+		(is (not (same? [1 1] nil)))
+		(is (not (same? nil nil)))))
+		
+(deftest contains-cell?-test
+	(testing "Should return true when a cell is found, and false otherwise, and handle nulls/empties with false returns"
+		(is (contains-cell? [[1 2] [3 4]] [1 2]))
+		(is (contains-cell? [[1 2] [3 4] [5 6]] [3 4]))
+		(is (contains-cell? [[1 2] [3 4] [5 6]] [5 6]))
+		(is (not (contains-cell? [[1 2] [3 4]] [5 6])))
+		(is (not (contains-cell? [[1 2] [3 4]] [2 1])))
+		(is (not (contains-cell? [] [1 1])))
+		(is (not (contains-cell? [[1 1]] nil)))
+		(is (not (contains-cell? nil [ 1 1])))
+		(is (not (contains-cell? [] [1 2])))
+		(is (not (contains-cell? [] nil)))
+		(is (not (contains-cell? nil nil)))
+		(is (not (contains-cell? nil [1 1])))
+		(is (not (contains-cell? [] [])))		
+))		
 
 (def-btest occupied-test 5 [[1 1] [2 4] [3 2] [4 5] [5 3]] {}
     (testing "Should return true iff cell is occupied"
@@ -122,6 +150,11 @@
         (is (same-baseline-any? [8 7]))
         (is (not (same-baseline-any? [6 10])))))
 
+(def-btest all-lines-with-test 5 [] {}
+	(testing "Should draw lines with endings on grid border, each defined by an element in a sorted collection and a common cell"
+		(is (= [ [[1 1] [1 2] [1 3] [1 4] [1 5]]] [[1 1]] [1 5]))
+))
+        
 (deftest id-generator-test
     (testing "Should return a function which increments an id atomically and returns a new id on demand" 
         (let [nextId (id-generator)]
@@ -129,7 +162,39 @@
             (is (= 2 (nextId)))
             (is (= 3 (nextId))))))
 
-(def-btest verify-test 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
-    (testing "Should successfully verify a compliant candidate solution"
-        (is (verify))))    
+            
+(def-btest verify-test-withargs 11 [] {}
+    (testing "Should verify a compliant candidate solution and invalidate others"
+        (is (verify [] [[1 1]] []))
+        (is (verify [[1 1]] [[3 2]] []))
+        (is (verify [] [[1 1] [3 2]] []))
+        (is (verify [] [[1 1] [3 2] [5 3] [7 4] [9 5]] []))
+        (is (not (verify [[1 1]] [[2 2]] [])))
+        (is (not (verify [[1 1]] [[2 1]] [])))
+        (is (not (verify [[1 1]] [[5 1]] [])))
+        (is (not (verify [[1 1]] [[1 11]] [])))
+        (is (not (verify [] [[1 1] [2 2] [3 2] [5 5]] [])))
+))      
+
+(def-btest verify-test-1 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
+	(testing "Should verify that the current state is a valid solution, even though incomplete"
+		(is (verify))
+))		
+	  
+;;2 4 7 1 8 11 5 3 9 6 10
+(def-btest verify-test-2 11 [[1 2] [2 4] [3 7] [4 1] [5 8] [6 11] [7 5] [8 3] [9 9] [10 6] [11 10]] {}
+	(testing "Should verify that the current state is a valid solution (size 11)"
+		(is (verify))))
+
+;;1 3 12 10 7 2 11 5 8 13 9 4 6
+(def-btest verify-test-3 13 [ [1 1] [2 3] [3 12] [4 10] [5 7] [6 2] [7 11] [8 5] [9 8] [10 13] [11 9] [12 4] [13 6]] {}
+	(testing "Should verify that the current state is a valid solution (size 13)"
+		(is (verify))))
+
+;;1 3 5 7 2 4 6
+(def-btest verify-test-4 7 [ [1 1] [2 3] [3 5] [4 7] [5 2] [6 4] [7 6]] {}
+	(testing "Should invalidate the current state if not compliant (size 7)"
+		(is (not (verify)))))
+
+        
 
