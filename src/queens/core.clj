@@ -1,4 +1,5 @@
-(ns queens.core)
+(ns queens.core
+	(:use queens.util))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Algorithm outline:
@@ -37,54 +38,20 @@
                                   ;;
                                   ;;
                     :size  5      ;; the size of the grid with 5 as default with start/end being [1 1] and [5 5]. Should be rebound.
-               }))
-              
-(defn id-generator []
-    (let [id (atom 0)]
-        (fn [] (swap! id inc) )))
-
-;; Returns true if coll filtered with pred
-;; contains at least one element; false otherwise.
-(defmacro coll-pred [coll pred]
-    `(< 0 (count (filter #(~pred %) ~coll))))    
-
-(defn same? [ c1 c2 ]
-	(cond (empty? c1) false
-	      (empty? c2) false
-	 :else
-	 	(let [[x1 y1] c1 [x2 y2] c2]
-			(and (= x1 x2) (= y1 y2)))))
-
-(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
+               }))              
 
 (defn occupied? [[x y]]  (coll-pred (:queens @state)
                             #(and (= x (first %)) (= y (second %))) ))
 
 
-(defn same-row? [[x1 y1] [x2 y2]] (= x1 x2))
-(defn same-col? [[x1 y1] [x2 y2]] (= y1 y2))
-(defn same-diag? [[x1 y1] [x2 y2]] (let [xdiff (Math/abs (- x2 x1)) ydiff (Math/abs (- y2 y1))] (= xdiff ydiff)))
-
-;; Returns true if two cells are in the same row, column or 45 degree angle diagonal; false otherwise
-(defn same-baseline? [c1 c2]
-        (or (same-row? c1 c2) (same-col? c1 c2) (same-diag? c1 c2)))
-
-;; Returns true if cell lies on the same-baseline as one of the cells in coll, and false otherwise.
-;; If coll is empty false is returned
-(defn same-baseline-from? [coll cell]
-    (cond (empty? coll) false
-    	  (same-baseline? (first coll) cell) true
-          (= 1 (count coll)) false
-          :else
-            (recur (next coll) cell)))
-
-;; Wrapper around -> SEE same-baseline-from [(:queens @state) cell
+;; Wrapper around -> SEE queens.util/same-baseline-from [(:queens @state) cell
 (defn same-baseline-any? [cell] (same-baseline-from? (:queens @state) cell))
 
 (defn outside-boundary? [[x y]]
     (let [size (:size @state)]
         (or (< size x) (< x 1) (< size y) (< y 1))))
 
+        
 ;; Calculates all cells on the same line as the two input cells
 ;; and returns a vector of [cell1, cell2,...] of all cells within the current size grid.
 ;; ASSUMPTION 1: It is assumed that this invocation is the first recognized line segment for the output line,
