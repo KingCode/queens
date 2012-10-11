@@ -60,10 +60,11 @@
         (is (same-baseline-any? [8 7]))
         (is (not (same-baseline-any? [6 10])))))
 
-(def-btest all-lines-with-test 5 [] {}
+(comment
+(def-btest lines-between-test 5 [] {}
 	(testing "Should draw lines with endings on grid border, each defined by an element in a sorted collection and a common cell"
-		(is (= [ [[1 1] [1 2] [1 3] [1 4] [1 5]]] [[1 1]] [1 5]))
-))        
+		(is (= [ [[1 1] [1 2] [1 3] [1 4] [1 5]]] (lines-between [[1 1]] [1 5]))
+)))     )   
 
             
 (def-btest verify-test-withargs 11 [] {}
@@ -71,7 +72,7 @@
         (is (verify [] [[1 1]] []))
         (is (verify [[1 1]] [[3 2]] []))
         (is (verify [] [[1 1] [3 2]] []))
-        (is (verify [] [[1 1] [3 2] [5 3] [7 4] [9 5]] []))
+        (is (not (verify [] [[1 1] [3 2] [5 3] [7 4] [9 5]] [])))
         (is (not (verify [[1 1]] [[2 2]] [])))
         (is (not (verify [[1 1]] [[2 1]] [])))
         (is (not (verify [[1 1]] [[5 1]] [])))
@@ -81,7 +82,7 @@
 
 (def-btest verify-test-1 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
 	(testing "Should verify that the current state is a valid solution, even though incomplete"
-		(is (verify))
+		(is (not (verify)))
 ))		
 	  
 ;;2 4 7 1 8 11 5 3 9 6 10
@@ -99,5 +100,7 @@
 	(testing "Should invalidate the current state if not compliant (size 7)"
 		(is (not (verify)))))
 
-        
-
+;;4 2 5 3 1
+(def-btest verify-test-5 5 [ [1 4] [2 2] [3 5] [4 3] [5 1]] {}        
+	(testing "Should invalidate a non compliant solution (size 5)"
+		(is (not (verify)))))

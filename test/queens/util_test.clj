@@ -204,3 +204,27 @@
             (is (= [[2 7][6 4][10 1]]) (line [2 7] [10 1] 13))
             (is (= [[2 7][6 4][10 1]]) (line [6 4] [2 7] 13))
             (is (= [[2 7][6 4][10 1]]) (line [10 1] [2 7] 13))))
+
+(deftest filter-baselines-test
+        (testing "Should return only cells not forming a  baseline"
+            (is (= [[5 4][7 6]] (filter-baselines [[1 1][4 2][5 4][7 6]] [3 3])))
+            (is (= [[1 1][4 2]] (filter-baselines [[1 1][4 2][5 4][7 6]] [9 4])))
+            (is (= [[1 1][4 2][5 4][7 6]]  (filter-baselines [[1 1][4 2][5 4][7 6]] [9 5])))
+            (is (= [[7 6]]  (filter-baselines [[1 1][4 2][5 4][7 6]] [4 4])))))
+
+(deftest irregular-lines-test
+        (testing "Should return all complete lines which are irregular"
+            (is (= [[[1 1][4 2][7 3]] [[4 2][5 4][6 6][7 8]]] (irregular-lines [[1 1] [5 4]] [4 2] 9)))
+            (is (= [[[1 7][3 6][5 5][7 4][9 3]] [[4 2][5 5][6 8]]] (irregular-lines [[3 6][6 8]] [5 5] 9)))))
+
+(deftest any-line?-test
+        (testing "Should tell whether a cell is within any lines from a collection of lines"
+            (let [ lines  [[[1 1][4 2][7 3]] [[4 2][5 4][6 6][7 8]]] ]
+            (is (any-line? lines [6 6]))
+            (is (any-line? lines [4 2]))
+            (is (any-line? lines [7 3]))
+            (is (any-line? lines [1 1]))
+            (is (any-line? lines [7 8]))
+            (is (not (any-line? lines [3 3])))
+            (is (not (any-line? lines [45 0])))
+)))

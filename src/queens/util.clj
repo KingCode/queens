@@ -9,6 +9,8 @@
 (defmacro coll-pred [coll pred]
     `(< 0 (count (filter #(~pred %) ~coll))))    
 
+(defn append [ coll1 coll2] (vec (concat coll1 coll2)))
+
 (defn same? [ c1 c2 ]
 	(cond (empty? c1) false
 	      (empty? c2) false
@@ -145,7 +147,7 @@
 (defn full-line [ deltas start size ]
         (let [ head (line-backward deltas start size)
                tail (line-forward deltas start size) ]
-        (concat (pop head) tail)))	
+        (vec (concat (pop head) tail))))	
 
 ;;
 ;; Returns the line defined by cells c1 and c2 in a grid of side dimension size
@@ -155,5 +157,25 @@
     (let [ deltas (smallest-increments-between c1 c2) ]
         (full-line deltas c1 size)))
 
+;;
+;; Filters cells from coll which form a baseline with c
+;;
+(defn filter-baselines [ coll c] 
+    (filter #(not (same-baseline? % c)) coll))
+
+;;
+;; Returns a vector of all lines formed by the cells in coll and c
+;; which are irregular.
+;;
+(defn irregular-lines [ coll c size]
+    (let [fcoll (filter-baselines coll c) ]
+        (vec (map #(line % c size) fcoll)))) 
+
+;;
+;; Returns true if cell is in any one or more of lines; false otherwise.
+;; Returns false if lines or cell are nil or empty 
+;;
+(defn any-line? [ lines cell ]
+    (< 0 (count (filter #(contains-cell? % cell) lines))))
 
 

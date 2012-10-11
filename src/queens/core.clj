@@ -72,8 +72,8 @@
 (defn add-queen [[x y]] (swap! state #(assoc  % :queens (conj (:queens %) [x y]))))
 
 ;; Returns complete lines defined by each element of 'coll' and 'cell'
-(defn all-lines-between [ coll cell ] 
-	(map #(line-with-acc % cell) coll))
+(defn lines-between [ coll cell ] 
+	(map #(line-with % cell) coll))
 
 
 ;; Verifies that 'remainder' cells comply with the rules, assuming 'compliant' cells have been verified.
@@ -84,14 +84,14 @@
 ;;                      :queen -> position of first found queen which caused failure if any
 ;;                      :count -> the number of queens prior to failure point, or all of them if verifcation passes
 ;;                      :passed -> true if verification passed, false otherwise
-(defn verify ([ compliant, remainder, usedlines-cells]
+(defn verify ([ compliant, remainder, usedlines]
     (let [candidate (first remainder)]
        (cond (empty? remainder) true
-          (contains-cell? usedlines-cells candidate) false
           (same-baseline-from? compliant candidate) false
-		  ;;MISSING: check for new lines and update usedlines-cells          
+          (any-line? usedlines candidate) false
           :else
-            (recur (conj compliant candidate) (next remainder) (conj usedlines-cells candidate)))))
+            (let [ newlines (irregular-lines compliant candidate (:size @state)) ]
+            (recur (conj compliant candidate) (next remainder) (append usedlines newlines))))))
 
 ;; Verifies independently (without changing the state) that all queens currently in (:queens @state) 
 ;; comply with the rules.
