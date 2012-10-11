@@ -146,3 +146,14 @@
         (let [ head (line-backward deltas start size)
                tail (line-forward deltas start size) ]
         (concat (pop head) tail)))	
+
+;;
+;; Returns the line defined by cells c1 and c2 in a grid of side dimension size
+;; as a vector of cells sorted in row/col order.
+;;
+(defn line [ c1 c2 size ]
+    (let [ deltas (smallest-increments-between c1 c2) ]
+        (full-line deltas c1 size)))
+
+
+
