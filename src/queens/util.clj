@@ -37,6 +37,16 @@
           :else
             (recur (next coll) cell)))			
 
+;;
+;; Returns all cells in coll on the same baseline as cell
+;; or nil if none is found.
+(defn in-baseline [coll cell]
+    (let [ found (map #(same-baseline? % cell) coll) ]
+        (if (empty? found)
+            nil
+            (vec found))))
+     
+
 ;; Returns argument, a workaround for #(x) when x is not a function
 (defn self [x] x)
 
@@ -51,7 +61,7 @@
 ;;
 (defn gcd_op [a b] 	
     (cond (= a b) #(self a) ;;NOT simply a, because (gcd 1 1) will make trampoline complain.
-    						;;(the very first invocation must return a function, at least in 1.4)
+    		            ;;(the very first invocation must return a function, at least in 1.4)
           (< b a) #(gcd_op (- a b) b)
           :else   #(gcd_op a (- b a))))
 

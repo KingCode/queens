@@ -90,6 +90,11 @@
         (is (not (same-baseline? [1 1] [5 2])))
         (is (not (same-baseline? [1 1] [2 3])))
         (is (not (same-baseline? [3 3] [5 4])))))		
+
+;; TODO
+(deftest in-baseline-test
+    (testing "Should return all cells in same baseline, or nil"
+))
 		
 (deftest gcd-test
     (testing "Should return the gcd of two integers"
