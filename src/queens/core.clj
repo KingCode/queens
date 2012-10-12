@@ -75,14 +75,12 @@
 	(map #(line-with % cell) coll))
 
 
-;; Verifies that 'remainder' cells comply with the rules, assuming 'compliant' cells have been verified.
+;; Returns true if new candidate cells in 'remainder' comply with the rules, assuming 
+;; cells in 'compliant' have been verified; false otherwise. If 'remainder' is nil/empty
+;; true is returned.
+;;
 ;; Both arguments are assumed to be sorted in row column order. The last argument stores non-baseline
 ;; formations from known cells contained in them, each with two cells from 'compliant' in it.
-;; If remainder is nil or empty, 'true' is returned.
-;; Returns a map with following key/values
-;;                      :queen -> position of first found queen which caused failure if any
-;;                      :count -> the number of queens prior to failure point, or all of them if verifcation passes
-;;                      :passed -> true if verification passed, false otherwise
 (defn verify ([ compliant, remainder, usedlines]
     (let [candidate (first remainder)]
        (cond (empty? remainder) true
