@@ -226,5 +226,4 @@
             (is (any-line? lines [1 1]))
             (is (any-line? lines [7 8]))
             (is (not (any-line? lines [3 3])))
-            (is (not (any-line? lines [45 0])))
-)))
+            (is (not (any-line? lines [45 0]))))))

@@ -131,6 +131,7 @@
 
 ;;
 ;; Returns the inverse of a direction, e.g (= [-2 3] (inverse [2 -3])
+;; NOTE: there is probably a built-in fn/macro to do sign reversal, I just have to find it...
 ;;
 (defn inverse [[x y]] [(- x x x) (- y y y)])
 

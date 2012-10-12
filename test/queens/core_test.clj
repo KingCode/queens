@@ -104,3 +104,14 @@
 (def-btest verify-test-5 5 [ [1 4] [2 2] [3 5] [4 3] [5 1]] {}        
 	(testing "Should invalidate a non compliant solution (size 5)"
 		(is (not (verify)))))
+
+;;4 2 5 3 (remove last cell from previous)
+(def-btest verify-test-6 5 [ [1 4] [2 2] [3 5] [4 3]] {}
+        (testing "Should validate a compliant collection, even tough not a complete solution (size 5)"
+            (is (verify))))
+
+
+;;4 2 3 1 (remove first of last three cells from verify-test-5)
+(def-btest verify-test-7 5 [ [1 4] [2 2] [4 3] [5 1]] {}
+        (testing "Should validate a compliant collection, even though not a complete solution (size 5)"
+            (is (verify))))

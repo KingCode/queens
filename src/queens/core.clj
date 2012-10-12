@@ -40,17 +40,12 @@
                     :size  5      ;; the size of the grid with 5 as default with start/end being [1 1] and [5 5]. Should be rebound.
                }))              
 
-(defn occupied? [[x y]]  (coll-pred (:queens @state)
-                            #(and (= x (first %)) (= y (second %))) ))
-
+(defn occupied? [[x y]]  (coll-pred (:queens @state) #(same? % [x y])))
 
 ;; Wrapper around -> SEE queens.util/same-baseline-from [(:queens @state) cell
 (defn same-baseline-any? [cell] (same-baseline-from? (:queens @state) cell))
 
-(defn outside-boundary? [[x y]]
-    (let [size (:size @state)]
-        (or (< size x) (< x 1) (< size y) (< y 1))))
-
+(defn outside-boundary? [ cell ] (outside? cell (:size @state))) 
         
 ;; Calculates all cells on the same line as the two input cells
 ;; and returns a vector of [cell1, cell2,...] of all cells within the current size grid.
@@ -65,6 +60,10 @@
                 newacc
                 (recur [x2 y2] [(+ x2 xdiff) (+ y2 ydiff)] newacc))))                       
 
+;;
+;; Returns the complete line formed by c1 and c2. This is more efficient
+;; then queens.util/line which is used by ->verify, because scanning order is assumed
+;; and therefore there is no need to compute increments.
 ;; Wrapper around -> SEE ABOVE line-with-acc
 (defn line-with [ c1 c2] (line-with-acc c1 c2 []))
                        
