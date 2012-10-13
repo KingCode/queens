@@ -40,11 +40,9 @@
 ;;
 ;; Returns all cells in coll on the same baseline as cell
 ;; or nil if none is found.
+;;
 (defn in-baseline [coll cell]
-    (let [ found (map #(same-baseline? % cell) coll) ]
-        (if (empty? found)
-            nil
-            (vec found))))
+        (vec (map #(same-baseline? % cell) coll))) 
      
 
 ;; Returns argument, a workaround for #(x) when x is not a function
@@ -189,4 +187,15 @@
 (defn any-line? [ lines cell ]
     (< 0 (count (filter #(contains-cell? % cell) lines))))
 
-
+;;
+;; Returns all line segments formed between any cell(s) in 'cells' forming a line 
+;; segment with 'c' which is  part of any one of 'lines'; and all cells in 'cells'
+;; forming a baseline with 'c'.
+;; Each element in the returned vector is ordered in row/column order and can be either
+;; a single cell or a pair, e.g. [s] if c defines a baseline with s or [s t] if
+;; s, t and c are part of a non-baseline. Baseline partners are listed first.
+;;
+;; It is assumed that each one of 'lines' contains an element from 'cells'.
+;;
+;;(defn common-segments [ cells lines c ]
+ ;;   (let [ bases (in-line cells c)     
