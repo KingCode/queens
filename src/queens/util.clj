@@ -38,11 +38,10 @@
             (recur (next coll) cell)))			
 
 ;;
-;; Returns all cells in coll on the same baseline as cell
-;; or nil if none is found.
+;; Returns all cells in coll on the same baseline as cell.
 ;;
 (defn in-baseline [coll cell]
-        (vec (map #(same-baseline? % cell) coll))) 
+        (vec (filter #(same-baseline? % cell) coll))) 
      
 
 ;; Returns argument, a workaround for #(x) when x is not a function
@@ -197,5 +196,14 @@
 ;;
 ;; It is assumed that each one of 'lines' contains an element from 'cells'.
 ;;
-;;(defn common-segments [ cells lines c ]
- ;;   (let [ bases (in-line cells c)     
+(defn query-cells-with [ cells lines c ]
+     (let [ basecells (in-baseline cells c)
+            lines-with-c (filter #(contains-cell? % c) lines)
+            find-cells-in-line (fn [ line ] (vec (filter #(contains-cell? cells %) line)))
+            segments (map find-cells-in-line lines-with-c) ]
+
+            (conj basecells segments)))
+
+
+
+               

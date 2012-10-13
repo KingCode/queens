@@ -91,10 +91,9 @@
         (is (not (same-baseline? [1 1] [2 3])))
         (is (not (same-baseline? [3 3] [5 4])))))		
 
-;; TODO
 (deftest in-baseline-test
     (testing "Should return all cells in same baseline, or nil"
-))
+        (is (= [[1 1] [5 7] [33 6]] (in-baseline [[1 1] [5 7] [10 9] [33 6]] [6 6])))))
 		
 (deftest gcd-test
     (testing "Should return the gcd of two integers"
@@ -232,3 +231,7 @@
             (is (any-line? lines [7 8]))
             (is (not (any-line? lines [3 3])))
             (is (not (any-line? lines [45 0]))))))
+
+;;(deftest query-cells-with-test
+  ;;      (testing "Should show all occupied cells participating in a line with a candidate cell"
+    ;;        (let [ cells [[1 4] [2 2] [3 5] [4 3]] lines
