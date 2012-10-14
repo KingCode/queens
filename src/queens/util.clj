@@ -186,6 +186,8 @@
 (defn any-line? [ lines cell ]
     (< 0 (count (filter #(contains-cell? % cell) lines))))
 
+(defn nil-if-empty [ x ] (if (empty? x) nil x))
+
 ;;
 ;; Returns all line segments formed between any cell(s) in 'cells' forming a line 
 ;; segment with 'c' which is  part of any one of 'lines'; and all cells in 'cells'
@@ -197,13 +199,10 @@
 ;; It is assumed that each one of 'lines' contains an element from 'cells'.
 ;;
 (defn query-cells-with [ cells lines c ]
-     (let [ basecells (in-baseline cells c)
+     (let [ basecells (sort (in-baseline cells c))
             lines-with-c (filter #(contains-cell? % c) lines)
             find-cells-in-line (fn [ line ] (vec (filter #(contains-cell? cells %) line)))
-            segments (map find-cells-in-line lines-with-c) ]
+            segments (sort (vec (map find-cells-in-line lines-with-c)))  
+            result  (concat basecells segments)  ] 
 
-            (conj basecells segments)))
-
-
-
-               
+           (vec (filter #(not (empty? %)) result))))

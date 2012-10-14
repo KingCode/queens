@@ -92,8 +92,9 @@
         (is (not (same-baseline? [3 3] [5 4])))))		
 
 (deftest in-baseline-test
-    (testing "Should return all cells in same baseline, or nil"
-        (is (= [[1 1] [5 7] [33 6]] (in-baseline [[1 1] [5 7] [10 9] [33 6]] [6 6])))))
+    (testing "Should return all cells in same baseline as candidate cell"
+        (is (= [[1 1] [5 7] [33 6]] (in-baseline [[1 1] [5 7] [10 9] [33 6]] [6 6])))
+        (is (= [] (in-baseline [[1 4] [2 2] [3 5] [4 3]] [6 7])))))
 		
 (deftest gcd-test
     (testing "Should return the gcd of two integers"
@@ -217,7 +218,7 @@
             (is (= [[7 6]]  (filter-baselines [[1 1][4 2][5 4][7 6]] [4 4])))))
 
 (deftest irregular-lines-test
-        (testing "Should return all complete lines which are irregular"
+        (testing "Should return all complete lines formed between a candidate and any coll. elements, which are irregular"
             (is (= [[[1 1][4 2][7 3]] [[4 2][5 4][6 6][7 8]]] (irregular-lines [[1 1] [5 4]] [4 2] 9)))
             (is (= [[[1 7][3 6][5 5][7 4][9 3]] [[4 2][5 5][6 8]]] (irregular-lines [[3 6][6 8]] [5 5] 9)))))
 
@@ -232,6 +233,39 @@
             (is (not (any-line? lines [3 3])))
             (is (not (any-line? lines [45 0]))))))
 
-;;(deftest query-cells-with-test
-  ;;      (testing "Should show all occupied cells participating in a line with a candidate cell"
-    ;;        (let [ cells [[1 4] [2 2] [3 5] [4 3]] lines
+(deftest query-cells-with-test
+        (testing "Should show all occupied cells participating in a line with a candidate cell"
+            (let [ lines-0 (irregular-lines [[1 4]] [2 2] 7)
+                   lines-1 (irregular-lines [[1 4][2 2]] [3 5] 7)
+                   lines-2 (irregular-lines [[1 4][2 2][3 5]] [4 3] 7)
+                   lines (vec (set (concat lines-0 lines-1 lines-2)))
+                   coll [[1 4][2 2][3 5][4 3]] 
+                   c-1 [6 6]
+                   c-2 [2 7]
+                   c-3 [2 4]
+                   c-4 [5 1]
+                   c-5 [6 4]
+                   c-6 [5 6]
+                   c-7 [6 7]
+                 ]
+
+                 (is (= [[2 2]] (query-cells-with coll lines c-1)))
+                 (is (= [[2 2] [[3 5][4 3]]] (query-cells-with coll lines c-2)))
+                 (is (= [[1 4] [2 2] [3 5]] (query-cells-with coll lines c-3)))
+                 (is (= [[[3 5][4 3]]] (query-cells-with coll lines c-4)))
+                 (is (= [[1 4] [[2 2][4 3]]] (query-cells-with coll lines c-5)))
+                 (is (= [[[1 4][3 5]]] (query-cells-with coll lines c-6)))
+                 (is (= [] (query-cells-with coll lines c-7))))))
+
+(deftest query-cells-with-test-morelines
+        (testing "Should show all occupied cells participating in a line with a candidate cell"
+            (let [ lines-0 (irregular-lines [[1 4]] [2 2] 13)
+                   lines-1 (irregular-lines [[1 4][2 2]] [3 5] 13)
+                   lines-2 (irregular-lines [[1 4][2 2][3 5]] [4 3] 13)
+                   lines-3 (irregular-lines [[1 4][2 2][3 5][4 3]] [6 7] 13)
+                   lines-4 (irregular-lines [[1 4][2 2][3 5][4 3][6 7]] [9 6] 13)
+                   lines (vec (set (concat lines-0 lines-1 lines-2 lines-3 lines-4)))
+                   coll [[1 4][2 2][3 5][4 3][6 7][9 6]] 
+                   c-1 [12 5]
+                ]
+                (is (= [[3 5] [[6 7][9 6]]] (query-cells-with coll lines c-1))))))
