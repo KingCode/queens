@@ -15,7 +15,5 @@ STATUS
 
 Currently the verification step is completed. Currently working on backtracking and managing state.
 
-NOTE: the data structure 'state' in queens.core is too complex and will be considerably simpler - please ignore.
-
 TODO: improve console I/O and add verification/reporting to 'play' the puzzle. 
 
