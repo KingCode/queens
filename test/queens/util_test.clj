@@ -248,7 +248,9 @@
                    c-6 [5 6]
                    c-7 [6 7]
                  ]
-
+                
+                 (is (= [] (query-cells-with coll lines nil)))
+                 (is (= [] (query-cells-with [] lines c-1)))
                  (is (= [[2 2]] (query-cells-with coll lines c-1)))
                  (is (= [[2 2] [[3 5][4 3]]] (query-cells-with coll lines c-2)))
                  (is (= [[1 4] [2 2] [3 5]] (query-cells-with coll lines c-3)))

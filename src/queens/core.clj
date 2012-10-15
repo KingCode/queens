@@ -82,10 +82,12 @@
 ;; Both arguments are assumed to be sorted in row column order. The last argument stores non-baseline
 ;; formations from known cells contained in them, each with two cells from 'compliant' in it.
 (defn verify ([ compliant, remainder, usedlines]
-    (let [candidate (first remainder)]
-       (cond (empty? remainder) true
-          (same-baseline-from? compliant candidate) false
-          (any-line? usedlines candidate) false
+    (let [  candidate (first remainder)
+            error-links (query-cells-with compliant usedlines candidate) ]
+       (cond 
+            (empty? remainder) true
+            (not (empty? error-links))  
+                            (do (assoc @state :error { candidate error-links}) false) 
           :else
             (let [ newlines (irregular-lines compliant candidate (:size @state)) ]
             (recur (conj compliant candidate) (next remainder) (append usedlines newlines))))))

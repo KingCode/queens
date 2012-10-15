@@ -199,10 +199,11 @@
 ;; It is assumed that each one of 'lines' contains an element from 'cells'.
 ;;
 (defn query-cells-with [ cells lines c ]
-     (let [ basecells (sort (in-baseline cells c))
+     (if (or (empty? cells) (empty? c)) []
+        (let [ basecells (sort (in-baseline cells c))
             lines-with-c (filter #(contains-cell? % c) lines)
             find-cells-in-line (fn [ line ] (vec (filter #(contains-cell? cells %) line)))
             segments (sort (vec (map find-cells-in-line lines-with-c)))  
             result  (concat basecells segments)  ] 
 
-           (vec (filter #(not (empty? %)) result))))
+           (vec (filter #(not (empty? %)) result)))))
