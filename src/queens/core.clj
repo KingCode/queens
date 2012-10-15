@@ -1,14 +1,30 @@
 (ns queens.core
 	(:use queens.util))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Definitions: a baseline is a row, column or diagonal to a 45 degree angle. Otherwise a line is 'irregular'.
 ;;
-;; Algorithm outline:
+;; Problem: compute coordinates of N locations on a square grid of NxN locations such that: 
+;;          - no more than one of them can be on the same baseline
+;;          - no more than two of them can be on any other line
+;;
+;; Algorithm outline for the first found solution:
 ;;          init [grid-size]: initialize (globally unbound) 'state' var.  with grid size
-;;          scan-grid: Initialize and scan in row/col order. Assign the next/first candidate cell, and verify.
-;;                     If verification fails, free the candidate cell, move one cell forward and repeat.
-;;                     Output a list of accepted candidate squares and the number of rows assigned.
-;;          verify [cell]: for each element e  in (:occupied state), invoke (occupied-basic cell) then (occupied-lines cell)
-;;                         and return false if any of them returns true.
+;;          scan-grid:
+;;                0) Initialize 
+;;                1) Pick the next candidate.
+;;                    1.1) If the next candidate is nil, go to step 3
+;;                    1.2) If candidate is one of :hotcells return to step 1
+;;                        1.3) Else, create all irregular lines b/w candidate and each of :queens and add it to :lines
+;;                            1.3.1) add all newly created line's elements to :hotcells
+;;                            1.3.2) add candidate to :queens
+;;                2) If :queens has N elements the solution is complete, else repeat step 1.
+;;                3) If :queens has less than N elements AND there are no more candidates, backtracking is required.
+;;                    3.1) if queens is empty and all candidate queens on the first row have been tried, then there
+;;                         is no solution for size N. Else,
+;;                    3.2) remove the last element from :queens.
+;;                    3.3) for all lines containing the removed element and no other from :queens
+;;                        3.2.1) remove corresponding elements within them, from :hotcells
+;;                    3.4) repeat step 1.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
