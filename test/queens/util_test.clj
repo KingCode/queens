@@ -271,3 +271,18 @@
                    c-1 [12 5]
                 ]
                 (is (= [[3 5] [[6 7][9 6]]] (query-cells-with coll lines c-1))))))
+
+(deftest move-1-test
+		(testing "Should move one position forward in row/col order taking limit into account"
+			(is (= [1 2] (move-1 [1 1] 3)))
+			(is (= [2 1] (move-1 [1 3] 3)))
+			(is (= [3 3] (move-1 [3 2] 3)))
+			(is (= nil 	 (move-1 [3 3] 3)))
+))			
+	                
+(deftest search-test
+      (testing "Should tell quickly whether an element is in a large collection"
+            (let [ coll [[1 3] [2 4] [5 6] [6 10] [8 3]]  ]
+                
+                (is (search coll [5 6]))
+)))

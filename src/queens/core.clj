@@ -35,8 +35,9 @@
                    :queens []     ;; occupied cells
                                   ;;
                                   ;;
-                   :hotcells  []  ;; cells, anyone of which being occupied would invalidate the current candidate,
-                                  ;; gets updated after each candidate evaluation.
+                   :hotcells  (sorted-set [])  ; cells, anyone of which being occupied would invalidate the current candidate,
+                                  ;; gets updated after each candidate evaluation. Sorted for binary search and fast
+                                  ;; updates.
                                   ;;
                    :lines  {}     ;; a cache of computed lines for reuse, as a map of line IDs to a (sorted ) vector of all grid cells
                                   ;; on the line: integer -> [[x1 y1] [x2 y2]...]
@@ -110,8 +111,38 @@
             
     ([] (verify [] (:queens @state) [])))
 
-          
+
+;;
+;; Returns the next position following the argument location.
+;;
+(defn inc-cursor [ pos ] (move-1 pos (:size @state)))
+    
+    
+;;
+;; 
+;; (defn solution    
+    
+    
+;;
+;; Examines cell 'cursor' and if eligible to become a queen, updates the state,
+;; and returns a function invoking candidate-from (inc-cursor cursor).
+;; If not found, and the number of queens is < N, a function invoking backtrack is returned.
+;;
+;;(defn candidate-from [ cursor ]
+;;	(cond 
+;;             (= nil cursor) #(backtrack)
+;;             (contains-cell? (:hotcells @state) cursor)  #(candidate-from (inc-cursor curor))
+;;             :else   
+                        ;; add new queen for cursor and update state
+;;                    (let [ newlines 
+                
+                     
+	
 
 
 
+;;
+;; Removes the last added queen and all related hot cells, and returns a fn invoking next-candidate
+;;
+;;(defn backtrack []
 

@@ -207,3 +207,37 @@
             result  (concat basecells segments)  ] 
 
            (vec (filter #(not (empty? %)) result)))))
+           
+           
+;;
+;; Returns the next position following the argument location, 
+;; adjusting for grid size limit
+;;           
+(defn move-1 [ [x y ] limit ] 
+	(cond (and (<= limit x) (<= limit y)) nil 
+		  (<= limit y) [(inc x) 1]
+		  :else [ x (inc y) ] ))
+
+;;
+;; Using binary search, returns true if the cell is present in coll, false otherwise.
+;; If either or both are nil false is returned.
+;; ASSUMPTION: coll is sorted and without duplicates
+;;
+(defn search-op [ coll c] 
+    (let [ mid (int (Math/floor (/ (count coll)  2)))
+           splits (split-at mid coll)
+           left (nth splits 0)
+           right (nth splits 1) 
+           l-joint (last left)
+           r-joint (first right) ]
+
+        (cond (= c l-joint) #(self true)
+              (= c r-joint) #(self true)
+              (< c l-joint) #(search-op left c)
+              :else         #(search-op right c))))
+                
+        
+;;             
+;; Trampoline wrapper around search-op (see below).
+;;
+(defn search [ coll c] (trampoline (search-op coll c)))
