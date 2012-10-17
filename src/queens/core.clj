@@ -122,27 +122,33 @@
 ;; 
 ;; (defn solution    
     
+(declare backtrack)
     
 ;;
 ;; Examines cell 'cursor' and if eligible to become a queen, updates the state,
 ;; and returns a function invoking candidate-from (inc-cursor cursor).
 ;; If not found, and the number of queens is < N, a function invoking backtrack is returned.
 ;;
-;;(defn candidate-from [ cursor ]
-;;	(cond 
-;;             (= nil cursor) #(backtrack)
-;;             (contains-cell? (:hotcells @state) cursor)  #(candidate-from (inc-cursor curor))
-;;             :else   
-                        ;; add new queen for cursor and update state
-;;                    (let [ newlines 
-                
-                     
-	
-
-
-
+(comment
+(defn candidate [ cursor ]
+    (let [ nextpos (inc-pos cursor) ]
+	(cond 
+             (= (:size @state) (count (:queens @state))) #(self DONE)
+             (= nil cursor) #(backtrack)
+             (contains-cell? (:hotcells @state) cursor)  #(candidate nextpos)
+             :else   
+                    ;; add cursor to :queens, then move cursor forward and repeat
+                    (let [ newlines (lines-between (:queens @state) cursor) ]
+                        ;; add to :hotcells all cells in saturated lines
+                         (conj (:queens @state) cursor)
+                         #(candidate nextpos)))))  
+)
 ;;
 ;; Removes the last added queen and all related hot cells, and returns a fn invoking next-candidate
+;; or, if all cells in the first row have been tried a fn returning DONE
 ;;
-;;(defn backtrack []
-
+;; (defn backtrack [] 
+;;    (let [ q (pop (:queens @state)) 
+;;            qn (inc-pos q)          ]  
+;;       (if (empty? qn)  #(self DONE)
+          ;;prune :hotcells 

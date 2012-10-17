@@ -279,10 +279,45 @@
 			(is (= [3 3] (move-1 [3 2] 3)))
 			(is (= nil 	 (move-1 [3 3] 3)))
 ))			
+
+
+(deftest compare-test
+		(testing "Should compare two positions according to java comparator semantics using row/col order"
+			(is (before? [1 1] [1 2]))
+			(is (not (before? [1 2] [1 1])))
+			(is (before? [24 10] [25 1]))
+			(is (after? [1 2] [1 1]))
+			(is (after? [2 1] [1 1000]))))
 	                
 (deftest search-test
-      (testing "Should tell quickly whether an element is in a large collection"
-            (let [ coll [[1 3] [2 4] [5 6] [6 10] [8 3]]  ]
-                
+      (testing "Should tell quickly whether a cell is in a large collection"
+            (let [ coll [[1 3] [2 4] [5 6] [6 10] [8 3]]  
+                        
+            	   bigend 51  ;; Setting this to 200 caused large colls' initialization 
+            	   			   ;; to take several minutes to complete on my PC
+            	   diffsiz 20  ;; MUST be less than 'bigend'
+            	   lessend (- bigend diffsiz)
+            	   big (apply vec #{(for [ x (range 1 bigend) y (range 1 bigend) ] [x y])})
+            	   diff (apply vec #{ (for [ x (range 1 (inc diffsiz)) y (range 1 (inc diffsiz)) ] 
+            	   							[ (inc (rand-int diffsiz)) (inc (rand-int diffsiz)) ])})
+            	   less (apply vec #{ (for [ x (range 1 lessend) y (range 1 lessend)
+            	   						:when (not-in diff [x y]) ] [x y])})
+            	   						
+				   c1 (nth less 0)
+				   c2 (nth less (quot lessend 2))
+				   c3 (nth less (dec lessend))
+				   c4 (nth diff 0)
+				   c5 (nth diff (quot diffsiz 2))
+				   c6 (nth diff diffsiz)
+            ]                
                 (is (search coll [5 6]))
+                (is (not (search coll nil)))
+                (is (not (search nil [1 3])))
+                (is (not (search nil nil)))
+                (is (search less c1))                
+                (is (search less c2))
+                (is (search less c3))
+                (is (not (search less c4)))
+                (is (not (search less c5)))
+                (is (not (search less c6)))
 )))

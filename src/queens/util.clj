@@ -18,7 +18,13 @@
 	 	(let [[x1 y1] c1 [x2 y2] c2]
 			(and (= x1 x2) (= y1 y2)))))
 			
-(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
+(defn in [ coll c ] (not (= nil (some #(= c %) coll))))
+
+(defn not-in [ coll c] (not (in coll c)))
+						
+;;(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
+(defn contains-cell? [coll elem] (in coll elem)) 
+
 
 (defn same-row? [[x1 y1] [x2 y2]] (= x1 x2))
 (defn same-col? [[x1 y1] [x2 y2]] (= y1 y2))
@@ -219,25 +225,55 @@
 		  :else [ x (inc y) ] ))
 
 ;;
-;; Using binary search, returns true if the cell is present in coll, false otherwise.
-;; If either or both are nil false is returned.
-;; ASSUMPTION: coll is sorted and without duplicates
+;; Compares two cells in row/col order using the java comparator semantics
+;; No nils are allowed.
+;;
+(defn compare-cells [ c1 c2 ]
+	(cond (empty? c1) 1
+		  (empty? c2) -1
+		  :else
+ 			(let [ x1 (first c1) y1 (second c1) x2 (first c2)  y2 (second c2) ]
+				(cond (and (= x1 x2) (= y1 y2))  0		  
+					  (and (= x1 x2) (< y1 y2)) -1
+					  (< x1 x2) 				-1
+					  :else 					 1))))
+
+;;
+;; Returns true if c1 is ordered before c2, false otherwise 
+;;
+(defn before? [ c1 c2 ] (< (compare-cells c1 c2) 0))
+
+;;
+;; Returns true if c1 is ordered after c2, false otherwise 
+;;
+(defn after? [ c1 c2 ] (< 0 (compare-cells c1 c2)))		  
+		  
+;;
+;; Implements decisions for (search coll c) (SEE fn search below), 
+;; returning anonymous functions which are either a recurrence step or a truth value. 
 ;;
 (defn search-op [ coll c] 
-    (let [ mid (int (Math/floor (/ (count coll)  2)))
+    (let [ mid (quot (count coll)  2)
            splits (split-at mid coll)
            left (nth splits 0)
            right (nth splits 1) 
            l-joint (last left)
            r-joint (first right) ]
 
-        (cond (= c l-joint) #(self true)
+        (cond 
+        	  (empty? coll) #(self false)
+        	  (empty? c) #(self false)        	  
+        	  (= c l-joint) #(self true)
               (= c r-joint) #(self true)
-              (< c l-joint) #(search-op left c)
+              (before? c l-joint) #(search-op left c)
               :else         #(search-op right c))))
                 
         
 ;;             
+;; Using binary search, returns true if the cell is present in coll, false otherwise.
+;; If either or both are nil false is returned.
+;; ASSUMPTION: coll is sorted and without duplicates
+;;
 ;; Trampoline wrapper around search-op (see below).
 ;;
 (defn search [ coll c] (trampoline (search-op coll c)))
