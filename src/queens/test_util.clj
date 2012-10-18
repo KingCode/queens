@@ -1,5 +1,6 @@
 (ns queens.test-util
 	(:use clojure.test
+                  queens.state
 		  queens.core))
 
 ;;define a test with automated global var overriding

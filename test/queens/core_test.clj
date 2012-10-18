@@ -1,7 +1,8 @@
 (ns queens.core-test
   (:use clojure.test
-  		queens.test-util
-        queens.core))
+	queens.test-util
+        queens.core
+        queens.state))
 
 (def-btest occupied-test 5 [[1 1] [2 4] [3 2] [4 5] [5 3]] {}
     (testing "Should return true iff cell is occupied"
