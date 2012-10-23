@@ -51,6 +51,6 @@
                         (reset! hc merged))))
 
 ;;
-;; Prunes hotcells  
+;; Prunes hotcells which 
 ;; 
 ;;(defn prune-hotcells
