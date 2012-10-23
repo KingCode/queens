@@ -118,7 +118,7 @@
                          #(candidate nextpos)))))  
 )
 ;;
-;; Removes the last added queen and the hot cells that related only to it, and returns a fn invoking next-candidate
+;; Removes the last added queen and all related hot cells, and returns a fn invoking next-candidate
 ;; or, if all cells in the first row have been tried a fn returning DONE
 ;;
 ;; (defn backtrack [] 
