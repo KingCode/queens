@@ -198,17 +198,24 @@
 
 (deftest line-test
         (testing "Should return a full line using only two cells and size inputs"
-            (is (= [[1 3][2 1]]) (line [1 3] [2 1] 3))
-            (is (= [[1 3][2 1]]) (line [2 1] [1 3] 3))
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [7 6] [13 10] 13))            
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [13 10] [7 6] 13))
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [4 4] [10 8] 13))
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [1 2] [7 6] 13))
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [10 8] [7 6] 13)) 
-            (is (= [[1 2][4 4][7 6][10 8][13 10]]) (line [10 8] [1 2] 13)) 
-            (is (= [[2 7][6 4][10 1]]) (line [2 7] [10 1] 13))
-            (is (= [[2 7][6 4][10 1]]) (line [6 4] [2 7] 13))
-            (is (= [[2 7][6 4][10 1]]) (line [10 1] [2 7] 13))))
+        	(is (= [[1 1][1 2][1 3]] (line [1 1] [1 3] 3)))
+        	(is (= [[1 1][1 2][1 3]] (line [1 1] [1 2] 3)))
+        	(is (= [[1 2][2 2][3 2]] (line [2 2] [3 2] 3)))
+        	(is (= [[1 2][2 2][3 2]] (line [1 2] [3 2] 3)))
+        	(is (= [[2 1][3 2][4 3][5 4]] (line [3 2] [5 4] 5)))
+        	(is (= [[2 1][3 2][4 3][5 4]] (line [5 4] [3 2] 5)))
+        	(is (= [[2 1][3 2][4 3][5 4]] (line [4 3] [2 1] 5)))
+            (is (= [[1 3][2 1]] (line [1 3] [2 1] 3)))
+            (is (= [[1 3][2 1]] (line [2 1] [1 3] 3)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [7 6] [13 10] 13)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [13 10] [7 6] 13)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [4 4] [10 8] 13)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [1 2] [7 6] 13)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [10 8] [7 6] 13)))
+            (is (= [[1 2][4 4][7 6][10 8][13 10]] (line [10 8] [1 2] 13)))
+            (is (= [[2 7][6 4][10 1]] (line [2 7] [10 1] 13)))
+            (is (= [[2 7][6 4][10 1]] (line [6 4] [2 7] 13)))
+            (is (= [[2 7][6 4][10 1]] (line [10 1] [2 7] 13)))))
 
 (deftest filter-baselines-test
         (testing "Should return only cells not forming a  baseline"
@@ -288,8 +295,14 @@
 			(is (before? [24 10] [25 1]))
 			(is (after? [1 2] [1 1]))
 			(is (after? [2 1] [1 1000]))))
-	                
+			
+			
 (deftest search-test
+		(testing "Should return the zero-based index of a cell if found, or zero"
+			(is (= 0 (search [[1 1] [2 1]] [1 1])))
+))						
+	                
+(deftest found?-test
       (testing "Should tell quickly whether a cell is in a large collection"
             (let [ coll [[1 3] [2 4] [5 6] [6 10] [8 3]]  
                         
@@ -310,14 +323,14 @@
 				   c5 (nth diff (quot diffsiz 2))
 				   c6 (nth diff diffsiz)
             ]                
-                (is (search coll [5 6]))
-                (is (not (search coll nil)))
-                (is (not (search nil [1 3])))
-                (is (not (search nil nil)))
-                (is (search less c1))                
-                (is (search less c2))
-                (is (search less c3))
-                (is (not (search less c4)))
-                (is (not (search less c5)))
-                (is (not (search less c6)))
+                (is (found? coll [5 6]))
+                (is (not (found? coll nil)))
+                (is (not (found? nil [1 3])))
+                (is (not (found? nil nil)))
+                (is (found? less c1))                
+                (is (found? less c2))
+                (is (found? less c3))
+                (is (not (found? less c4)))
+                (is (not (found? less c5)))
+                (is (not (found? less c6)))
 )))

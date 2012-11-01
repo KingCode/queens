@@ -30,24 +30,6 @@
                     :size  5      ;; the size of the grid with 5 as default with start/end being [1 1] and [5 5]. Should be rebound.
                }));) 
 
-;;State implementation data structures
-
-;; queens - stores the solution candidates
-(def q (atom (sorted-set [])))
-
-;; hot cells - not eligible for occupation by a queen
-(def hc (atom (sorted-set []))) 
-
-;; all lines formation known - as a cache to avoid recomputation
-(def l (atom {}))
-
-;; all lines storing hot cells
-(def hl (atom {}))
-
-;;
-(def s (atom 5))
-
-
 ;;
 ;; Module interface functions below this point
 ;;
@@ -76,7 +58,7 @@
 
 ;;
 ;; Prunes hot cells which should no longer be hot due to by removing the argument queen (popped queen), i.e.
-;; the lines defined partly by the popped queen are the only ones the pruced cells belong to.
+;; the lines defined partly by the popped queen are the only ones the pruned cells belong to.
 ;;
 ;; 
 ;;(defn prune-hotcells [ pq ]

@@ -104,25 +104,29 @@
 ;; If not found, and the number of queens is < N, a function invoking backtrack is returned.
 ;;
 (comment
-(defn candidate [ cursor ]
+(defn fill-queens-from [ cursor ]
     (let [ nextpos (inc-pos cursor) ]
-	(cond 
-             (= (:size @state) (count (:queens @state))) #(self DONE)
-             (= nil cursor) #(backtrack)
-             (contains-cell? (:hotcells @state) cursor)  #(candidate nextpos)
-             :else   
-                    ;; add cursor to :queens, then move cursor forward and repeat
+	(cond 	
+             (= (:size @state) (count (:queens @state))) #(self nil)    ;; solution found: we're done
+             (= nil cursor) #(backtrack)			        ;; no more candidates with current set of queens: backtrack
+             (contains-cell? (:hotcells @state) cursor)  	        ;; cursored candidate invalid: move on to the next one
+             						#(fill-queens-from nextpos)
+             :else   																;; cursored candidate valid:
+                    																;; 		add it to :queens 
+                    																;;		add all newly-formed lines' cells to :hotcells
+                    																;;					and to the :lines cache
+                    																;;		for each new hot cell, add to 
+                    																;;		then move cursor forward and repeat
                     (let [ newlines (lines-between (:queens @state) cursor) ]
-                        ;; add to :hotcells all cells in saturated lines
                          (conj (:queens @state) cursor)
                          #(candidate nextpos)))))  
 )
 ;;
 ;; Removes the last added queen and all related hot cells, and returns a fn invoking next-candidate
-;; or, if all cells in the first row have been tried a fn returning DONE
+;; or, if all cells in the first row have been tried a fn returning nil
 ;;
 ;; (defn backtrack [] 
 ;;    (let [ q (pop (:queens @state)) 
 ;;            qn (inc-pos q)          ]  
-;;       (if (empty? qn)  #(self DONE)
+;;       (if (empty? qn)  #(self nil)
           ;;prune :hotcells 

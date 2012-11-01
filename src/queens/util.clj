@@ -20,6 +20,8 @@
 			
 (defn in [ coll c ] (not (= nil (some #(= c %) coll))))
 
+(defn zero+? [ x ] (< -1 x))
+
 (defn not-in [ coll c] (not (in coll c)))
 						
 ;;(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
@@ -104,6 +106,7 @@
 ;;
 ;; Returns the smallest coordinate increments between two (sorted) nehgbouring cells of the line defined by 
 ;; c1 and c2; as a vector containig the row and column differentials, resp. 
+;; ASSUMPTION: c1 and c2 are not the same cell.
 ;;		   
 (defn smallest-increments-between [c1 c2] 
 	(let [ sorted (sort [c1 c2]) [x1 y1] (first sorted) [x2 y2] (second sorted)					
@@ -226,17 +229,13 @@
 
 ;;
 ;; Compares two cells in row/col order using the java comparator semantics
-;; No nils are allowed.
+;; No nils are allowed. Deals with empty/nil cells, which compare [] doesn't do.
 ;;
 (defn compare-cells [ c1 c2 ]
 	(cond (empty? c1) 1
 		  (empty? c2) -1
 		  :else
- 			(let [ x1 (first c1) y1 (second c1) x2 (first c2)  y2 (second c2) ]
-				(cond (and (= x1 x2) (= y1 y2))  0		  
-					  (and (= x1 x2) (< y1 y2)) -1
-					  (< x1 x2) 				-1
-					  :else 					 1))))
+ 			(compare c1 c2)))
 
 ;;
 ;; Returns true if c1 is ordered before c2, false otherwise 
@@ -248,32 +247,39 @@
 ;;
 (defn after? [ c1 c2 ] (< 0 (compare-cells c1 c2)))		  
 		  
+
 ;;
-;; Implements decisions for (search coll c) (SEE fn search below), 
+;; Implements decisions for (index coll c) (SEE fn search below), 
 ;; returning anonymous functions which are either a recurrence step or a truth value. 
 ;;
-(defn search-op [ coll c] 
-    (let [ mid (quot (count coll)  2)
-           splits (split-at mid coll)
-           left (nth splits 0)
-           right (nth splits 1) 
-           l-joint (last left)
-           r-joint (first right) ]
+(defn search-op [ coll c padding]
+     (let [ mid (quot (count coll)  2)
+            splits (split-at mid coll)
+            left (nth splits 0)
+            right (nth splits 1)
+            l-joint (last left)
+            r-joint (first right)
+            lpos (+ padding (dec mid))
+            rpos (+ padding mid)
+            rightPadding rpos
+            ]
+       (cond 
+        	  (empty? coll) #(self -1)
+        	  (empty? c) #(self -1)        	  
+        	  (= c l-joint) #(self lpos)
+              (= c r-joint) #(self rpos)
+              (before? c l-joint) #(search-op left c padding)
+              :else         #(search-op right c rightPadding))))
 
-        (cond 
-        	  (empty? coll) #(self false)
-        	  (empty? c) #(self false)        	  
-        	  (= c l-joint) #(self true)
-              (= c r-joint) #(self true)
-              (before? c l-joint) #(search-op left c)
-              :else         #(search-op right c))))
-                
-        
 ;;             
 ;; Using binary search, returns true if the cell is present in coll, false otherwise.
 ;; If either or both are nil false is returned.
 ;; ASSUMPTION: coll is sorted and without duplicates
 ;;
-;; Trampoline wrapper around search-op (see below).
-;;
-(defn search [ coll c] (trampoline (search-op coll c)))
+;; Trampoline wrapper around search-op.
+;;                            
+(defn search [ coll c] (trampoline (search-op coll c 0)))
+
+
+(defn found? [ coll c] (< -1 (search coll c)))
+
