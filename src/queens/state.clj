@@ -8,13 +8,13 @@
                                   ;;
                                   ;;
                    :lines  	 (hash-map)
-                   			      ;; a cache of pre-computed lines, as a map of line IDs to a (sorted ) vector of all grid cells
+                   	          ;; a cache of pre-computed lines, as a map of line IDs to a (sorted ) vector of all grid cells
                                   ;; on the line: integer -> [[x1 y1] [x2 y2]...]
                                   ;;
                                   ;; The IDs are assumed to be unique and implement hashCode().
                                   ;;
-                   :cells 	 (sorted-map)
-                    		      ;; for fast lookup in :lines, of an existing line formation map of cells to line IDs used as
+                   :lines-lookup (sorted-map)
+                    		  ;; for fast lookup in :lines, of an existing line formation map of cells to line IDs used as
                                   ;; keys to :lines. [x y] -> [line-id-1 line-id-2 line-id-3...].
                                   ;;
                                   ;;
@@ -39,6 +39,10 @@
 (defn lines-map [] (:lines @state))
 (defn cells-map [] (:cells @state))
 (defn size [] (:size @state))
+
+(defn add-queen! [ q ]
+    (let [new-queens (conj (queens) q) ]
+     (reset! state (merge @state {:queens new-queens}))))
 
 ;;
 ;; Adds one or more hotcells

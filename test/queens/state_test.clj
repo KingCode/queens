@@ -4,6 +4,13 @@
 			  queens.state))
 			  
 ;;[test-name size 				queens lines hotcells hotlines & body ]
+
+(def-btest-2 add-queens!-test 5 [[1 1]] (hash-map) (sorted-set) (sorted-set [])
+        (testing "Should add queen to the end of (:queens @state)"
+            (add-queen! [2 3])
+            (is (= [[1 1] [2 3]] (queens)))
+))
+
 			  
 (def-btest-2 add-hotcells-test 13 [] (hash-map) (sorted-set) (sorted-set []) 
 	(testing "Should update hotcells with added cells in order"

@@ -107,19 +107,22 @@
 (defn fill-queens-from [ cursor ]
     (let [ nextpos (inc-pos cursor) ]
 	(cond 	
-             (= (:size @state) (count (:queens @state))) #(self nil)    ;; solution found: we're done
-             (= nil cursor) #(backtrack)			        ;; no more candidates with current set of queens: backtrack
-             (contains-cell? (:hotcells @state) cursor)  	        ;; cursored candidate invalid: move on to the next one
-             						#(fill-queens-from nextpos)
-             :else   																;; cursored candidate valid:
-                    																;; 		add it to :queens 
-                    																;;		add all newly-formed lines' cells to :hotcells
-                    																;;					and to the :lines cache
-                    																;;		for each new hot cell, add to 
-                    																;;		then move cursor forward and repeat
-                    (let [ newlines (lines-between (:queens @state) cursor) ]
-                         (conj (:queens @state) cursor)
-                         #(candidate nextpos)))))  
+            (= (:size @state) (count (:queens @state))) #(self nil)    ;; solution found: we're done
+            (= nil cursor) #(backtrack)			        ;; no more candidates with current set of queens: backtrack
+
+            ;; cursored candidate invalid: move on to the next one
+            (contains-cell? (:hotcells @state) cursor) #(fill-queens-from nextpos)
+
+            :else 
+                ;; cursored candidate valid:
+                ;; add it to :queens
+                ;; add all newly-formed lines' cells to :hotcells
+                ;; and to the :lines cache
+                ;; then move cursor forward and repeat
+
+                (let [ newlines (lines-between (:queens @state) cursor) ]
+                    (add-queen! cursor)
+                      #(fill-queens-from nextpos)))))  
 )
 ;;
 ;; Removes the last added queen and all related hot cells, and returns a fn invoking next-candidate
