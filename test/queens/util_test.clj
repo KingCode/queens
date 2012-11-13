@@ -334,3 +334,19 @@
                 (is (not (found? less c5)))
                 (is (not (found? less c6)))
 )))
+
+(deftest generate-triangle-test
+	(testing "Should generate a template vector bearing corresponding cells' positions"
+		(is (= [ [[1 1]] 								;; [1 2]
+				 [[1 1] [1 2]] 							;; [1 3]
+				 [[1 1] [1 2] [1 3]] 					;; [2 1]
+				 [[1 1] [1 2] [1 3] [2 1]]				;; [2 2]
+				 [[1 1] [1 2] [1 3] [2 1] [2 2]]		;; [2 3]
+				 [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3]]  ;; [3 1]
+				 [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1]] ;;[3 2]
+				 [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1] [3 2]] ;;[3 3]
+				]
+				
+				(generate-triangle 3))))
+)
+				
