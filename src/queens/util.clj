@@ -284,16 +284,16 @@
 (defn found? [ coll c] (< -1 (search coll c)))
 
 ;; Creates a vector of (N-1) 1 to N-1 sized vectors, each element having 'init-val' value if provided,
-;; or a string representation of the element's position within the outermost vector.
+;; or a vector of the element's position within the outermost vector.
 ;; The inner vectors are ordered by increasing size.
 (defn generate-triangle 
 ([N init-val]
-    (let [ rows (* N N)
+    (let [ numRows (* N N)
+           rows (range 1 (inc numRows))
            cols (range 1 (inc N)) 
            grid (for [x cols y cols]
                     (if (empty? init-val) [x y] init-val)) ]
-	(vec (take (dec rows) (for [i (range 1 (inc rows))]
-                (vec (take i grid)))))))
+	(vec (take (dec numRows) (for [i rows] (vec (take i grid)))))))
 ([ N ]
 	(generate-triangle N nil)))
 			
