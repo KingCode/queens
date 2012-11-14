@@ -31,10 +31,10 @@
 	( [ test-name lines cells-to-lines pairs-to-lines size nextId & body ]
 	`(deftest ~test-name
 		(binding [lookup (atom {
-								 :lines ~lines
-								 :cells-to-lines ~cells-to-lines
-								 :cellpairs-to-lines ~pairs-to-lines
-								 :size ~size
-								 :nextId ~nextId
-						 }) ]
+					 :lines ~lines
+					 :cells-to-lines ~cells-to-lines
+					 :cellpairs-to-lines ~pairs-to-lines
+					 :size ~size
+					 :nextId ~nextId
+			 }) ]
 					(do ~@body)))))

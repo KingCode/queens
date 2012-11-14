@@ -303,9 +303,11 @@
 ;; Formats a value produced by generate-triangle into a string with inner vectors
 ;; separated by a newline character.
 ;;	
-(defn format-triangle [triangle]
+(defn format-triangle
+    ( [triangle replaced replacement]
 	(let [ts (str triangle)]	
-		(clojure.string/replace ts "]]" "]]\n")))
-			
+		(clojure.string/replace ts replaced replacement)))
+    ( [triangle]
+        (format-triangle triangle "]]" "]]\n")))			
 		
 
