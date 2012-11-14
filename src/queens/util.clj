@@ -292,11 +292,20 @@
            rows (range 1 (inc numRows))
            cols (range 1 (inc N)) 
            grid (for [x cols y cols]
-                    (if (empty? init-val) [x y] init-val)) ]
+                    (if (= ::COORDINATES init-val) [x y] init-val)) ]
 	(vec (take (dec numRows) (for [i rows] (vec (take i grid)))))))
 ([ N ]
 	(generate-triangle N nil)))
+	
+(defn generate-triangle-debug [ N ] (generate-triangle N ::COORDINATES))	
 			
+;;
+;; Formats a value produced by generate-triangle into a string with inner vectors
+;; separated by a newline character.
+;;	
+(defn format-triangle [triangle]
+	(let [ts (str triangle)]	
+		(clojure.string/replace ts "]]" "]]\n")))
 			
 		
 

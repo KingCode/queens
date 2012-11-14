@@ -348,6 +348,12 @@
 			 [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1] [3 2]]              ;;[3 3]
 			]
 				
-				(generate-triangle 3))))
+				(generate-triangle-debug 3))))
 )
+
+
+(deftest format-triangle-test
+	(testing "Should serialize a triangle into a line-formatted string"
+		(is (= "[[[1 1]]\n [[1 1] [1 2]]\n [[1 1] [1 2] [1 3]]\n [[1 1] [1 2] [1 3] [2 1]]\n [[1 1] [1 2] [1 3] [2 1] [2 2]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1] [3 2]]\n]"
+			   (format-triangle (generate-triangle-debug 3))))))
 				

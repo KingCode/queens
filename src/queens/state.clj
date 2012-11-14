@@ -1,21 +1,11 @@
-(ns queens.state)
+(ns queens.state
+	(:use queens.cache))
 
 ;;cells are 1-based [x y] coordinates vectors of a location inside a 'size' sided quare grid.
 ;;This root binding if primarily for documentation and default grid size, and should be overriden/rebound.
 ;;(comment ;; REPLACING with indiviual  symbols
 (def ^:dynamic state (atom {
                    :queens []     ;; occupied cells
-                                  ;;
-                                  ;;
-                   :lines  	 (hash-map)
-                   	          ;; a cache of pre-computed lines, as a map of line IDs to a (sorted ) vector of all grid cells
-                                  ;; on the line: integer -> [[x1 y1] [x2 y2]...]
-                                  ;;
-                                  ;; The IDs are assumed to be unique and implement hashCode().
-                                  ;;
-                   :lines-lookup (sorted-map)
-                    		  ;; for fast lookup in :lines, of an existing line formation map of cells to line IDs used as
-                                  ;; keys to :lines. [x y] -> [line-id-1 line-id-2 line-id-3...].
                                   ;;
                                   ;;
                    :hotcells  (sorted-set)  ; cells which are off-limit for the next queen

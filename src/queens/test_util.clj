@@ -1,6 +1,7 @@
 (ns queens.test-util
 	(:use clojure.test
-                  queens.state
+			queens.state
+            queens.cache     
 		  queens.core))
 
 ;;define a test with automated global var overriding
@@ -25,3 +26,15 @@
                                 :hotlines ~hotlines
                           })]
                      (do ~@body)))))
+
+(defmacro bind-cache-and-test
+	( [ test-name lines cells-to-lines pairs-to-lines size nextId & body ]
+	`(deftest ~test-name
+		(binding [lookup (atom {
+								 :lines ~lines
+								 :cells-to-lines ~cells-to-lines
+								 :cellpairs-to-lines ~pairs-to-lines
+								 :size ~size
+								 :nextId ~nextId
+						 }) ]
+					(do ~@body)))))
