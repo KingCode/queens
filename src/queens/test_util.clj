@@ -33,7 +33,7 @@
 		(binding [lookup (atom {
 					 :lines ~lines
 					 :cells-to-lines ~cells-to-lines
-					 :cellpairs-to-lines ~pairs-to-lines
+					 :matrix ~pairs-to-lines
 					 :size ~size
 					 :nextId ~nextId
 			 }) ]

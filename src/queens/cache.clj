@@ -15,7 +15,8 @@
                                   ;;
                                   ;;
                                   
-                   :cellpairs-to-lines []
+                   :matrix []
+                   	  ;; For fast lookup of cell pairs -> line ID for line defined by such cells.
                       ;; A vector of (N-1) 1 to N-1 sized vectors where N is the grid side size, and the element value
                       ;; refers to a line ID in :lines which contains both cells, each of which is referenced by the element's row position,
                       ;; and the element's column position respectively. 
@@ -47,46 +48,52 @@
                       ;; cells [1 1] and [2 3] define the line with ID 85, and likewise for cells [3 3] and [2 2] for line with ID 176,
                       ;; and the rest are not known yet.
 
-		:size 		0                               
+		:size 		0 ;; grid side length, must be the same as (:size @state)
+		              
 		:nextId 	0  ;; sequentially unused, i.e. next available, line ID 
 }))
 
 ;;
-;; Initialization of lookup with grid size (side length)
+;; Initialization of lookup with grid size (side length). Must be invoked consistently with (:size @state),
 ;;
-(defn init-lookup [ size] (reset! lookup (merge @lookup {:size size :cellpairs-to-lines (generate-triangle size)})))
+(defn init-lookup [ size] (reset! lookup (merge @lookup {:size size :matrix (generate-triangle size)})))
 
-
-(defn- cellpairs-to-lines-rowFor [ [x y]]
+;;
+;; Computes row index of (:matrix @lookup) for argument cell
+;;
+(defn- matrix-rowFor [ [x y]]
     (let [ N (:size @lookup) ]
         ;; decrement by 2 to account for: first grid element removed and zero-based vector
         (- (- (* N x) (- N y)) 2)))
 
-(defn- cellpairs-to-lines-colFor [ [x y]]
+;;
+;; Computes column index of (:matrix @lookup) for argument cell
+;;        
+(defn- matrix-colFor [ [x y]]
     (let [ N (:size @lookup) ]
-        (dec (- (* N x) (- N y))))) ;; here we include the first element
+        (dec (- (* N x) (- N y))))) ;; here we include the first element, as opposed to matrix-rowFor
 ;;
 ;; Retrieves the ID of the line defined by two cells, or, assuming [x1 y1], [x2 y2] are ordered, the value stored 
-;; within @lookup :cellpairs-to-lines' using [x1 y1] to index the location within the structure indexed by [x2 y2].
+;; within @lookup :matrix' using [x1 y1] to index the location within the structure indexed by [x2 y2].
 ;;
 (defn get-lineID [ c1 c2 ]
     (let [ [sc1 sc2] (vec (sort [c1 c2]))
-	   matrix (:cellpairs-to-lines @lookup)
-           row (cellpairs-to-lines-rowFor sc2)
-   	   col (cellpairs-to-lines-colFor sc1)
+	   matrix (:matrix @lookup)
+           row (matrix-rowFor sc2)
+   	   col (matrix-colFor sc1)
            rowVec (nth matrix row)
   	 ]	   		  
    	  (nth (nth matrix row) col)))
 
 ;; 
-;; Creates a new matrix from current values in (:cellpairs-to-lines @lookup) and 
+;; Creates a new matrix from current values in (:matrix @lookup) and 
 ;; the argument value for the location corresponding to the two argument cells
 ;;
 (defn new-matrix [ cell-1 cell-2 value] 
     (let [ [c1 c2] (vec (sort [cell-1 cell-2]))
-           row (cellpairs-to-lines-rowFor c2)
-   	   col (cellpairs-to-lines-colFor c1)
-           matrix (:cellpairs-to-lines @lookup)
+           row (matrix-rowFor c2)
+   	   	   col (matrix-colFor c1)
+           matrix (:matrix @lookup)
            rowSplits (split-at (inc row) matrix)
            oldRow (last (first rowSplits))
            rowPfx (vec (butlast (first rowSplits)))
@@ -99,5 +106,11 @@
            (vec (concat rowPfx [newRow] rowSfx))))
 
 (defn insert-into-matrix! [ c1 c2 val]
-    (reset! lookup (merge @lookup { :cellpairs-to-lines (new-matrix c1 c2 val) })))
+    (reset! lookup (merge @lookup { :matrix (new-matrix c1 c2 val) })))
+    
+    
+;;(defn check-and-insert-into-matrix! [ c1 c2 val]
+;;	(if (= nil (get-lineID c1 c2))
+;;		(let [ newline (line c1 c2 
+	
 
