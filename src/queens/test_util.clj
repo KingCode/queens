@@ -32,7 +32,7 @@
 	`(deftest ~test-name
 		(binding [lookup (atom {
 					 :lines ~lines
-					 :cells-to-lines ~cells-to-lines
+					 :cell2lines ~cells-to-lines
 					 :matrix ~pairs-to-lines
 					 :size ~size
 					 :nextId ~nextId
