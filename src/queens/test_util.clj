@@ -1,8 +1,9 @@
 (ns queens.test-util
 	(:use clojure.test
 			queens.state
-            queens.cache     
-		  queens.core))
+      queens.cache     
+		  queens.core
+		  queens.util ))
 
 ;;define a test with automated global var overriding
 (defmacro def-btest 
@@ -28,7 +29,7 @@
                      (do ~@body)))))
 
 (defmacro bind-cache-and-test
-	( [ test-name lines cells-to-lines pairs-to-lines size nextId & body ]
+	[ test-name lines cells-to-lines pairs-to-lines size nextId & body ]
 	`(deftest ~test-name
 		(binding [lookup (atom {
 					 :lines ~lines
@@ -37,4 +38,11 @@
 					 :size ~size
 					 :nextId ~nextId
 			 }) ]
-					(do ~@body)))))
+					(do ~@body))))
+					
+(defmacro init-cache-and-test [ test-name size & body ]  					
+`(deftest ~test-name
+      (init-lookup ~size)
+					(do ~@body)))
+
+					

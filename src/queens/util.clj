@@ -311,3 +311,12 @@
         (format-triangle triangle "]]" "]]\n")))			
 		
 
+;;
+;; Generates a collection of ordered pairs between all lower indexed elements and  others in 
+;; the argument collection, e.g [1 2 3 4] -> [1 2] [1 3] [1 4] [2 3] [2 4] [3 4]
+;;
+(comment TO REMOVE
+(defn pairs-with-first [coll acc]
+    (if (2 > (count coll)) acc
+        (recur (rest coll) (for [x [(first coll)] y (rest coll)] [x y]))))
+)

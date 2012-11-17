@@ -68,3 +68,110 @@
                 (is (= nil (find-lineId [2 2] [3 3])))                
                 (is (= 200 (find-lineId [19 13] [2 10])))))
 
+                
+(init-cache-and-test check-and-insert-newline-into-matrix!-test 5
+  (testing "Should make inserts consistently and atomically with only NEW cells 1,1 and 2,5"
+    (let [ c1 [1 1] c2 [2 5] 
+           expected-line [[1 1][2 5]]
+           expected-id 0
+           lu (check-and-insert-newline-into-matrix! c1 c2) ]
+           
+         (is (= 1 (count (:lines lu))))
+         (is (= 1 (:nextId lu)))
+         (is (= expected-line (get (:lines lu) expected-id)))
+         (is (= [expected-id] (get (:cell2lines lu) c1)))
+         (is (= [expected-id] (get (:cell2lines lu) c2)))
+
+         ;; Accessor functions
+         ;; check global scope i.e. @lookup instead of lu          
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= [expected-line] (getLines c1)))
+         (is (= [expected-line] (getLines c2)))         
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= [expected-id] (getLineIds c1)))
+         (is (= [expected-id] (getLineIds c2)))         
+         (is (= expected-line (getLine c1 c2)))
+         (is (= expected-line (getLine expected-id)))
+         (is (= 5 (getSize)))))
+         
+  (testing "Should make inserts consistently and atomically with cells (1 1) (2 5) and NEW cell (3 4) paired with (2 5)"
+    (let [ c1 [2 5] c2 [3 4] ;;ADDED LINE
+           expected-line [[2 5][3 4][4 3][5 2]]
+           expected-lines-c1 [[[1 1][2 5]] expected-line]
+           expected-lines-c2 [expected-line]
+           expected-id 1
+           expected-ids-c1 [0 expected-id]
+           lu (check-and-insert-newline-into-matrix! c1 c2) ]
+           
+         (is (= 2 (count (:lines lu))))
+         (is (= 2 (:nextId lu)))
+         (is (= expected-line (get (:lines lu) expected-id)))
+         (is (= expected-ids-c1 (get (:cell2lines lu) c1)))
+         (is (= [expected-id] (get (:cell2lines lu) c2)))
+
+         ;; Accessor functions
+         ;; check global scope i.e. @lookup instead of lu          
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= expected-lines-c1 (getLines c1)))
+         (is (= expected-lines-c2 (getLines c2)))         
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= expected-ids-c1 (getLineIds c1)))
+         (is (= [expected-id] (getLineIds c2)))         
+         (is (= expected-line (getLine c1 c2)))
+         (is (= expected-line (getLine expected-id)))
+
+         (is (= expected-id (getLineId [5 2][4 3])))         
+         (is (= expected-id (getLineId [5 2][3 4])))         
+         (is (= expected-id (getLineId [5 2][2 5])))         
+         (is (= expected-id (getLineId [4 3][3 4])))         
+         (is (= expected-id (getLineId [4 3][2 5])))         
+         (is (= expected-id (getLineId [3 4][2 5])))         
+    
+         (is (= 5 (getSize)))))
+         
+  (testing "Should make inserts consistently and atomically with cells (1 1) (2 5) and NEW line from (3 4) paired with (1 1)"
+    (let [ c1 [3 4] c2 [1 1] ;;ADDED LINE
+           expected-line [[1 1][3 4]]
+           expected-lines-c1 [[[2 5][3 4][4 3][5 2]] expected-line]
+           expected-lines-c2 [[[1 1][2 5]] expected-line]
+           expected-id 2
+           expected-ids-c1 [1 expected-id]
+           expected-ids-c2 [0 expected-id]
+           lu (check-and-insert-newline-into-matrix! c1 c2) ]
+           
+         (is (= 3 (count (:lines lu))))
+         (is (= 3 (:nextId lu)))
+         (is (= expected-line (get (:lines lu) expected-id)))
+         (is (= expected-ids-c1 (get (:cell2lines lu) c1)))
+         (is (= expected-ids-c2 (get (:cell2lines lu) c2)))
+
+         ;; Accessor functions
+         ;; check global scope i.e. @lookup instead of lu          
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= expected-lines-c1 (getLines c1)))
+         (is (= expected-lines-c2 (getLines c2)))         
+         (is (= expected-id (getLineId c1 c2)))
+         (is (= expected-ids-c1 (getLineIds c1)))
+         (is (= expected-ids-c2 (getLineIds c2)))         
+         (is (= expected-line (getLine c1 c2)))
+         (is (= expected-line (getLine expected-id)))         
+         (is (= 5 (getSize))))))
+                                
+
+(init-cache-and-test get-line-test 5
+  (testing "Should retrieve line IDs and update cache consistently"
+    (let [ c1 [1 1] c2 [2 5] line (lookup-line c1 c2) 
+           ;; this is last for change visibility
+           lu @lookup 
+         ]
+        (is (= 1 (:nextId lu)))
+        (is (= 0 (getLineId c1 c2)))
+        (is (= [[1 1] [2 5]] line))
+        (is (= line (getLine 0)))
+        (is (= line (getLine c1 c2)))        
+)))     
+
+   
+
+    
+
