@@ -310,13 +310,17 @@
     ( [triangle]
         (format-triangle triangle "]]" "]]\n")))			
 		
+;;
+;; Generates row labels for a matrix triangle as a sequence of cell coordinates
+;;
+(defn triangle-rowLabels [size]
+    (let [ s (inc size) ]
+   (drop 1 (for [x (range 1 s) y (range 1 s)] [x y]))))
+        
+;;
+;; Generates column labels for a matrix triangle as a sequence of cell coordinates
+;;
+(defn triangle-colLabels [size]
+    (let [ s (inc size) all (for [x (range 1 s) y (range 1 s)] [x y]) ]
+        (take (dec (count all)) all)))
 
-;;
-;; Generates a collection of ordered pairs between all lower indexed elements and  others in 
-;; the argument collection, e.g [1 2 3 4] -> [1 2] [1 3] [1 4] [2 3] [2 4] [3 4]
-;;
-(comment TO REMOVE
-(defn pairs-with-first [coll acc]
-    (if (2 > (count coll)) acc
-        (recur (rest coll) (for [x [(first coll)] y (rest coll)] [x y]))))
-)

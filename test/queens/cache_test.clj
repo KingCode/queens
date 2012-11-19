@@ -168,9 +168,15 @@
         (is (= 0 (getLineId c1 c2)))
         (is (= [[1 1] [2 5]] line))
         (is (= line (getLine 0)))
-        (is (= line (getLine c1 c2)))        
-)))     
+        (is (= line (getLine c1 c2))))
 
+    (let [ c1 [2 1] c2 [3 2] line (lookup-line c1 c2) lu @lookup ]
+        (is (= 2 (:nextId lu)))
+        (is (= 1 (getLineId c1 c2)))
+        (is (= [[2 1][3 2][4 3][5 4]] line))
+        (is (= line (getLine 1)))
+        (is (= line (getLine c1 c2)))     
+)))
    
 
     

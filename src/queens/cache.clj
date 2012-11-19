@@ -269,7 +269,33 @@
     (let [ id (line-id c1 c2) ]
         (get (:lines @lookup) id)))
   
-  
+;;
+;; Generates a representation of the matrix with labels 
+;;
+(defn format-matrix ( [matrix default sep]
+    (let [ siz (:size @lookup) 
+           r (triangle-rowLabels siz)
+           c (triangle-colLabels siz)
+           top (apply str (interpose sep c))
+           all (for [ row (range (dec (count matrix))) 
+                      col (range (dec row))
+                    ]
+                    (let [value (nth (nth matrix row) col)]
+                        (if (= nil value) default
+                                (str  (nth col c) "=" value))))
+          ]
+          all))
+
+                    ( []
+    (format-matrix (:matrix @lookup) "-----" " ")))
+         
+    
+
+
+
+;;
+;; For debugging, prints lookup state.
+;;  
 (defn show-lookup []
   (let [ lu @lookup ]
     (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) "\n\tMatrix:\n\t\t"
