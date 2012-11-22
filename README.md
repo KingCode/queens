@@ -13,7 +13,9 @@ This is an exercise to learn Clojure/leiningen and was prompted by coding challe
 
 STATUS
 
-Currently the verification step is completed. Currently working on backtracking and managing state.
-
-TODO: improve console I/O and add verification/reporting to 'play' the puzzle. 
+Algorithm and data structures fleshed out for single threaded version.
+ 
+TODOs: - implement sequential algorithm
+       - design and implement concurrent approach.
+       - implement web app and improve console I/O to 'play' the puzzle. 
 
