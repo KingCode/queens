@@ -15,7 +15,8 @@ STATUS
 
 Algorithm and data structures fleshed out for single threaded version.
  
-TODOs: - implement sequential algorithm
-       - design and implement concurrent approach.
-       - implement web app and improve console I/O to 'play' the puzzle. 
+TODOs: 
+ - implement sequential algorithm
+ - design and implement concurrent approach.
+ - implement web app and improve console I/O to 'play' the puzzle. 
 
