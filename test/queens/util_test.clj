@@ -356,4 +356,43 @@
 	(testing "Should serialize a triangle into a line-formatted string"
 		(is (= "[[[1 1]]\n [[1 1] [1 2]]\n [[1 1] [1 2] [1 3]]\n [[1 1] [1 2] [1 3] [2 1]]\n [[1 1] [1 2] [1 3] [2 1] [2 2]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1]]\n [[1 1] [1 2] [1 3] [2 1] [2 2] [2 3] [3 1] [3 2]]\n]"
 			   (format-triangle (generate-triangle-debug 3))))))
+			   
+			   
+(deftest merge-forkey-and-merge-value-test
+  (testing "Should access nested maps and merge onto the first one"
+    (let [ m1 {:a 1} m2 {:a 2} m3 {:a {:b {:c 10}}} m4 {:hello {:world 51}} ]
+      (is (= {:a 3} (merge-forkey + m1 [:a] m2)))
+      (is (= {:a 11} (merge-forkey + m1 [:a] m3 [:a :b :c])))
+      (is (= {:hello {:world 61}} (merge-forkey + m4 [:hello :world] m3 [:a :b :c])))
+      (is (= {:a 52} (merge-value + m1 [:a] 51))))))
 				
+(deftest surrounding-cells-test
+  (testing "Should return a sorted set of surronding cells within the grid"
+    (let [ siz 5 
+           l-top [1 1] c-top [1 3] r-top [1 5]
+           l-mid [3 1] c-mid [3 3] r-mid [3 5]
+           l-bot [5 1] c-bot [5 3] r-bot [5 5]
+           extra [4 4]
+           
+           l-top-exp (sorted-set [1 2] [2 2] [2 1])
+           c-top-exp (sorted-set [1 2] [1 4] [2 4] [2 3] [2 2])
+           r-top-exp (sorted-set [1 4] [2 5] [2 4])
+           l-mid-exp (sorted-set [2 1] [2 2] [3 2] [4 2] [4 1])
+           c-mid-exp (sorted-set [2 2] [2 3] [2 4] [3 4] [4 4] [4 3] [4 2] [3 2])
+           r-mid-exp (sorted-set [2 4] [2 5] [4 5] [4 4] [3 4])
+           l-bot-exp (sorted-set [4 1] [4 2] [5 2])
+           c-bot-exp (sorted-set [4 2] [4 3] [4 4] [5 4] [5 2])
+           r-bot-exp (sorted-set [4 4] [4 5] [5 4])
+           extra-exp (sorted-set [3 3] [3 4] [3 5] [4 5] [5 5] [5 4] [5 3] [4 3]) 
+         ]
+         
+         (is (= l-top-exp (surrounding-cells l-top 5)))
+         (is (= c-top-exp (surrounding-cells c-top 5)))
+         (is (= r-top-exp (surrounding-cells r-top 5)))
+         (is (= l-mid-exp (surrounding-cells l-mid 5)))
+         (is (= c-mid-exp (surrounding-cells c-mid 5)))
+         (is (= r-mid-exp (surrounding-cells r-mid 5)))
+         (is (= l-bot-exp (surrounding-cells l-bot 5)))
+         (is (= c-bot-exp (surrounding-cells c-bot 5)))
+         (is (= r-bot-exp (surrounding-cells r-bot 5)))
+         (is (= extra-exp (surrounding-cells extra 5))))))

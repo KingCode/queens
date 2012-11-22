@@ -5,19 +5,27 @@
 ;;This root binding if primarily for documentation and default grid size, and should be overriden/rebound.
 ;;(comment ;; REPLACING with indiviual  symbols
 (def ^:dynamic state (atom {
-                   :queens []     ;; occupied cells
+                   :queens []     ;; occupied cells, order is important
                                   ;;
                                   ;;
-                   :hotcells  (sorted-set)  ; cells which are off-limit for the next queen
-                   				  ;; 
-                   				  ;;
                                   
-				   :hotlines (hash-map) ;; mappings of line IDs -> mapping of :queens and :is-baseline keys 
-				   						;; -> (vector) tuple of queen cells and true/false
-				   						;;
-				   						;; line IDs are consistent and equal to those in :lines
+                   ;;
+                   ;; Used to pick the next candidate cell, which must not be in this coll.
+                   ;;                                  
+                   :hotcells (sorted-map) ;; cells which are currently off-limit
+                                          ;; as keys, and line IDs of hotlines they belong to 
+                   				  			        ;; as values.                                       				  			        
+                   				  			        
+                    ;;
+                    ;; Used for backtracking in order to prune :hotcells                    
+                    ;;
+				           :hotlines (sorted-set) ;; line IDs for lines containing hot cells
+				           
+				           ;;
+				           ;; Used for backtracking in order to lookup up and update :hotlines
+				           ;;
                                   
-                    :size  5      ;; the size of the grid with 5 as default with start/end being [1 1] and [5 5]. Should be rebound.
+                    :size  5      ;; the size of the grid, one-based indexing with 5 as default. Should be rebound.
                }));) 
 
 ;;

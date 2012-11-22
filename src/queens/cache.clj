@@ -1,5 +1,5 @@
 (ns queens.cache
-	(:use queens.util))
+	(:use queens.util queens.str-util))
 
 (def ^:dynamic lookup (atom {
 
@@ -48,9 +48,9 @@
                       ;; cells [1 1] and [2 3] define the line with ID 85, and likewise for cells [3 3] and [2 2] for line with ID 176,
                       ;; and the rest are not known yet.
 
-		:size 		0 ;; grid side length, must be the same as (:size @state)
+		                :size 		0 ;; grid side length, must be the same as (:size @state)
 		              
-		:nextId 	0  ;; sequentially unused, i.e. next available, line ID 
+		                :nextId 	0  ;; sequentially unused, i.e. next available, line ID 
 }))   
 
 
@@ -269,34 +269,15 @@
     (let [ id (line-id c1 c2) ]
         (get (:lines @lookup) id)))
   
-;;
-;; Generates a representation of the matrix with labels 
-;;
-(defn format-matrix ( [matrix default sep]
-    (let [ siz (:size @lookup) 
-           r (triangle-rowLabels siz)
-           c (triangle-colLabels siz)
-           top (apply str (interpose sep c))
-           all (for [ row (range (dec (count matrix))) 
-                      col (range (dec row))
-                    ]
-                    (let [value (nth (nth matrix row) col)]
-                        (if (= nil value) default
-                                (str  (nth col c) "=" value))))
-          ]
-          all))
 
-                    ( []
-    (format-matrix (:matrix @lookup) "-----" " ")))
-         
-    
-
-
-
+(defn format-lu-matrix []
+    (format-matrix (:matrix @lookup) "  -  " " " 5))
+        
 ;;
 ;; For debugging, prints lookup state.
 ;;  
 (defn show-lookup []
   (let [ lu @lookup ]
-    (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) "\n\tMatrix:\n\t\t"
-          (format-triangle (:matrix lu) "]" "]\n\t\t")))))
+    (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) "\n\tMatrix:\n"
+          ;;(format-triangle (:matrix lu) "]" "]\n\t\t")
+          (format-matrix (:matrix lu) (:size lu) "  -  " " " 5)))))

@@ -124,10 +124,28 @@
       (or (< size x) (< x 1) (< size y) (< y 1)))
 
 ;;
-;; Fills a line segment starting from the start cell backward until either coordinate exceeds size, 
-;; with the orientation (deltas) provided.
+;; Returns true if a cell within a square grid of size cells per side; false otherwise
 ;;      
+(defn inside? [ [x y] size ]
+  (not (outside? [x y] size)))
       
+;;
+;; Returns a vector of cells surrounding [x y] in a grid of side length size.
+;; The returned cells are sorted and within grid boundaries, i.e. between
+;; 3 and 8 cells are in the result depending on location.
+;;
+(defn surrounding-cells [ [x y] size ]
+  ;;numbered 1 to 8 clockwise starting on the upper left   
+  (let [ locations [[(dec x) (dec y)]
+                   [(dec x)   y    ] 
+                   [(dec x) (inc y)]
+                   [  x     (inc y)]
+                   [(inc x) (inc y)]
+                   [(inc x)   y    ]
+                   [(inc x) (dec y)]
+                   [  x     (dec y)]] 
+       ]
+       (apply sorted-set (filter #(inside? % size) locations))))     
 ;;
 ;;
 ;; Fills a line segment starting from start cell until either coordinate exceeds size, 
@@ -262,10 +280,10 @@
             lpos (+ padding (dec mid))
             rpos (+ padding mid)
             rightPadding rpos
-            ]
+          ]
        (cond 
         	  (empty? coll) #(self -1)
-        	  (empty? c) #(self -1)        	  
+        	  (nil? c) #(self -1)        	  
         	  (= c l-joint) #(self lpos)
               (= c r-joint) #(self rpos)
               (before? c l-joint) #(search-op left c padding)
@@ -323,4 +341,36 @@
 (defn triangle-colLabels [size]
     (let [ s (inc size) all (for [x (range 1 s) y (range 1 s)] [x y]) ]
         (take (dec (count all)) all)))
-
+        
+;;
+;; Merges a single entry for key from one map into another. The resulting map will
+;; yield the value for key from invoking f with values for keys1 and keys2 from m1 and m2 resp.
+;; All other map entries in the result are those from m1.
+;;
+;; If m1 or m2 are nil, or keys1/2 can't be found in either m1 or m2 at the described
+;; location then m1 is returned.
+;;        
+(defn merge-forkey 
+  ([ f m1 [key1 & morekeys1 ] m2 [ key2 & morekeys2 ] ]
+    (let [ keys1 (cons key1 morekeys1) keys2 (cons key2 morekeys2) ]
+	  (cond 
+	  	(or (nil? m1) (nil? m2)) m1		
+	  	(nil? (get-in m1 keys1)) m1
+	  	(nil? (get-in m2 keys2)) m1
+	  	:else
+	  		(assoc-in m1 keys1 (f (get-in m1 keys1) (get-in m2 keys2)))))) 
+	  		
+	([ f m1 [key & morekeys] m2 ]
+	  (let [keys (cons key morekeys)]
+	    (merge-forkey f m1 keys m2 keys))))
+	  
+;;
+;; Yields a new map from merging m1 with value for key(s) from the return of 
+;; (f (get-in m keys) value)
+;;	  
+(defn merge-value [f m1 [key & morekeys] value]
+        (merge-forkey f m1 (cons key morekeys) {:dummy-key value} [:dummy-key])) 	  
+	  
+	  
+		
+	
