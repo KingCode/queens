@@ -123,14 +123,16 @@
 ;;
 ;; Returns the next position following the argument location.
 ;;
-(defn inc-cursor [ pos ] (move-1 pos (:size @state)))  
+(defn inc-cursor [ state ] 
+    (let [ nextpos (move-1 (:cursor state) (:size state)) ]
+        (assoc state :cursor nextpos)))  
 
 ;;
-;; Returns a map of lineID -> [queen-cell candidate-cell] entries
-;; for each pairing b/w one of queens and candidate.
+;; Returns a map of lineID -> [coll candidate-cell] entries
+;; for each pairing b/w one of coll and candidate.
 ;;
-(defn new-line-ids [queens candidate]
-  (apply merge (map #({(line-id % candidate) [% candidate]}) queens)))
+(defn new-line-ids [coll candidate]
+  (apply merge (map #({(line-id % candidate) [% candidate]}) coll)))
 
 ;;
 ;; 
@@ -143,7 +145,25 @@
 (defn get-baseline-ids [cell]
   (let [ around (surrounding-cells cell (:size state)) ]
     (set (map #(line-id % cell) around))))
-  
+ 
+;;
+;;
+;;
+(defn hole-in-queens? [ queens candidate ]
+    (if (empty? queens) false
+        (let [ [x y] (last queens) [c d] candidate ]
+            (> c (inc x))))) 
+
+;;
+;;
+;;
+(defn candidate-exhausted? [ state ]
+    (let [ cursor (:cursor state)
+           queens (:queens state) la (:last-allowed state)
+           la-index (first la) la-val (second la) ]
+
+        (and (= (inc la-index) (count queens)) (> 0 (compare la-val cursor)))))
+
 (declare backtrack)
     
 ;;
@@ -167,15 +187,18 @@
 ;;   -- Increment the cursor and recurse
 ;;
 (comment
-(defn fill-queens-from [ state cursor ]
+(defn fill-queens [ state ]
     (let [ hc (:hotcells state) queens (:queens state) siz (:size state)
-           nextpos (inc-pos cursor) ]
+           cursor (:cursor state) hl (:hotlines state)
+           q2l (:queens2line state)
+          ]
 	    (cond 	
-            (= siz (count queens)) #(self nil)    ;; solution found: we're done
-            (= nil cursor) #(backtrack)			      ;; no more candidates with current set of queens: backtrack
+            (= siz (count queens)) #(self state)    ;; solution found: we're done
+            (candidate-exhausted? state) #(self state) ;; no more solutions
+            (hole-in-queens? :queens cursor)  #(backtrack) ;; no more candidates with current set of queens: backtrack
 
             ;; cursored candidate invalid: move on to the next one
-            (in hc cursor) #(fill-queens-from state nextpos)
+            (in hc cursor) #(fill-queens (inc-cursor state))
 
             :else 
                 ;; cursored candidate valid:
@@ -183,15 +206,18 @@
                 ;; add all newly-formed lines' cells to :hotcells
                 ;; then move cursor forward and repeat
 
-                (let [ newIds (new-line-ids queens cursor) 
-                       newLines (map #(getLine %) newIds)
+                (let [ 
+                       neighbours (surrounding-cells cursor siz)
+                       newBLids (new-line-ids neighbours cursor siz)
+                       newIds (new-line-ids queens cursor) 
+                       newLines (map #(getLine %) (set (concat newBLids newIds)))
                        newHCs (apply sorted-map (interleave newIds newLines))
                        updatedLines                     
                        updatedHCs (apply merge hc newHCs)
                        updatedQueens (conj queens cursor)                       
                      ]
                     (add-queen! cursor)
-                      #(fill-queens-from nextpos)))))  
+                      #(fill-queens nextpos)))))  
 )
 ;;
 ;; Removes the last added queen and all related hot cells, and returns a fn invoking fill-queens-from
