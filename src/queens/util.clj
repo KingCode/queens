@@ -245,6 +245,33 @@
 		  (<= limit y) [(inc x) 1]
 		  :else [ x (inc y) ] ))
 
+
+;;
+;; The operation inovked by next-irregular, see below.
+;;		  		  
+(defn- next-irregular-op [ base start size]
+	(let [
+			[bx by] base [sx sy] start
+			diffx (- sx bx)
+			diffy (- sy by)
+		 ]
+		 
+		 (cond 
+		 	(= nil start) #(self nil)
+		 	(not (same-baseline? base start)) #(self start)
+		 	(= 0 diffx) (if (= size sx) #(self nil) 
+		 					#(next-irregular-op base [(inc sx) 1] size))
+		 	:else 
+		 			#(next-irregular-op base (move-1 start size) size))))
+		
+;;
+;; Finds the next cell not baseline-related to with, greater or equal to from.
+;; If no such cell can be found, nil is returned.
+;;
+;; It is assumed that base, start are sorted according to parameter order.
+;;
+(defn next-irregular [with from size] (trampoline next-irregular-op with from size))
+		  
 ;;
 ;; Compares two cells in row/col order using the java comparator semantics
 ;; No nils are allowed. Deals with empty/nil cells, which compare [] doesn't do.

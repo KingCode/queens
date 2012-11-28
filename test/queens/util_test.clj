@@ -396,3 +396,25 @@
          (is (= c-bot-exp (surrounding-cells c-bot 5)))
          (is (= r-bot-exp (surrounding-cells r-bot 5)))
          (is (= extra-exp (surrounding-cells extra 5))))))
+         
+(deftest next-irregular-test
+	(testing "Should find the next cell which is not baseline-related starting from a designated location"
+		(is (= [2 3] (next-irregular [1 1] [1 1] 5)))
+		(is (= [2 3] (next-irregular [1 1] [1 2] 5)))
+		(is (= [2 3] (next-irregular [1 1] [1 3] 5)))
+		(is (= [2 3] (next-irregular [1 1] [1 4] 5)))
+		(is (= [2 3] (next-irregular [1 1] [1 5] 5)))
+		(is (= [2 3] (next-irregular [1 1] [2 1] 5)))
+		(is (= [2 3] (next-irregular [1 1] [2 2] 5)))		
+		(is (= [2 3] (next-irregular [1 1] [2 3] 5)))
+		(is (= [2 4] (next-irregular [1 1] [2 4] 5)))		
+		(is (= [3 2] (next-irregular [1 1] [3 1] 5)))
+		
+		(is (= [4 1] (next-irregular [3 3] [3 3] 5)))
+		(is (= [4 5] (next-irregular [3 3] [4 2] 5)))
+		
+		(is (= nil (next-irregular [5 1] [5 2] 5)))
+		
+))		
+         
+         

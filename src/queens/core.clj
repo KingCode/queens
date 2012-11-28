@@ -123,9 +123,15 @@
 ;;
 ;; Returns the next position following the argument location.
 ;;
-(defn inc-cursor [ state ] 
-    (let [ nextpos (move-1 (:cursor state) (:size state)) ]
-        (assoc state :cursor nextpos)))  
+(defn next-candidate [ state ] 
+    (let [ 
+    		queens (:queens state)
+    		from (last queens)
+    		size (:size state)
+    		cursor (:cursor state)    		
+    		nextcursor (next-irregular from cursor size)
+    	 ]
+        (assoc state :cursor nextcursor)))  
 
 ;;
 ;; Returns a map of lineID -> [coll candidate-cell] entries
@@ -168,7 +174,7 @@
     
 ;;
 ;; Examines cell 'cursor' and if eligible to become a queen, updates the state,
-;; and returns a function invoking candidate-from (inc-cursor cursor).
+;; and returns a function invoking candidate-from (next-candidate cursor).
 ;; If not found, and the number of queens is < N, a function invoking backtrack is returned.
 ;;
 ;; ALGORITHM:
@@ -198,7 +204,7 @@
             (hole-in-queens? :queens cursor)  #(backtrack) ;; no more candidates with current set of queens: backtrack
 
             ;; cursored candidate invalid: move on to the next one
-            (in hc cursor) #(fill-queens (inc-cursor state))
+            (in hc cursor) #(fill-queens (next-candidate state))
 
             :else 
                 ;; cursored candidate valid:
