@@ -18,14 +18,14 @@
 	 	(let [[x1 y1] c1 [x2 y2] c2]
 			(and (= x1 x2) (= y1 y2)))))
 			
-(defn in [ coll c ] (not (= nil (some #(= c %) coll))))
+(defn in? [ coll c ] (not (= nil (some #{c} coll))))
 
 (defn zero+? [ x ] (< -1 x))
 
-(defn not-in [ coll c] (not (in coll c)))
+(defn not-in? [ coll c] (not (in? coll c)))
 						
 ;;(defn contains-cell? [coll elem] (coll-pred coll (partial same? elem))) 
-(defn contains-cell? [coll elem] (in coll elem)) 
+(defn contains-cell? [coll elem] (in? coll elem)) 
 
 
 (defn same-row? [[x1 y1] [x2 y2]] (= x1 x2))

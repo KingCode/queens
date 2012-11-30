@@ -314,7 +314,7 @@
             	   diff (apply vec #{ (for [ x (range 1 (inc diffsiz)) y (range 1 (inc diffsiz)) ] 
             	   							[ (inc (rand-int diffsiz)) (inc (rand-int diffsiz)) ])})
             	   less (apply vec #{ (for [ x (range 1 lessend) y (range 1 lessend)
-            	   						:when (not-in diff [x y]) ] [x y])})
+            	   						:when (not-in? diff [x y]) ] [x y])})
             	   						
 				   c1 (nth less 0)
 				   c2 (nth less (quot lessend 2))

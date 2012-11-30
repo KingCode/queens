@@ -21,9 +21,9 @@
 ;;                      :hotlines, a map of lineIDs containing all cells in :hotcells
 ;;                      :queens2lines, a map of cells to a vector of ine IDs with each
 ;;                                     element of :queens as keys
-;;                      :last-allowed, a duple of an index to :queens and the 
-;;                                     cell value at that position beyond which
-;;                                     the current search ends.
+;;                      :search-end, a triple of an index to :queens (0), a queen cell
+;;									   position (1) and a cell value (2) beyond which the current search ends
+;;                                     when (0) points to the last queen, and the last queen is located at (1).
 ;;                      :cursor the cell to be considered next
 ;;
 ;; Routine INIT [ size ] initialize global LOOKUP and local STATE with size  
@@ -31,8 +31,8 @@
 ;; Function FILL-QUEENS [ state ]
 ;; 1. If 
 ;;      1-a. all queens have been found or 
-;;      1-b. the tail element of :queens is :last-allowed > index AND
-;;           :cursor is past :last-allowed > value we're done
+;;      1-b. the tail element of :queens is :search-end > index AND
+;;           :cursor is past :search-end > value we're done
 ;;      THEN we are done. Return the input state
 ;; 2. If :cursor is outside the boundary, backtrack (see below)
 ;; 3. If the position at cursor is found in :hotcells, increment cursor and recurse.
@@ -44,7 +44,7 @@
 ;;   4.4 Add all cells in the new lines to :hotcells
 ;;   4.5 Increment ;cursor and recurse wih the new state
 ;;
-;;      NOTE: the use :last-allowed is currently static, e.g. would always be (1 [1 :size]).
+;;      NOTE: the use :search-end is currently static, e.g. would always be (1 [1 :size]).
 ;;            The intent is to eventually use it to demarcate concurrency boundaries.
 ;;
 ;;  Function BACKTRACK [ state ]
@@ -119,6 +119,11 @@
             
     ([] (verify [] (:queens @state) [])))
 
+    
+;;
+;; Returns the next position following the argument location.
+;;
+(defn inc-cursor [ state ] (move-1 (:cursor state) (:size state)))     
 
 ;;
 ;; Returns the next position following the argument location.
@@ -129,7 +134,7 @@
     		from (last queens)
     		size (:size state)
     		cursor (:cursor state)    		
-    		nextcursor (next-irregular from cursor size)
+    		nextcursor (next-irregular from (inc-cursor state) size)
     	 ]
         (assoc state :cursor nextcursor)))  
 
@@ -161,14 +166,17 @@
             (> c (inc x))))) 
 
 ;;
+;; Decides whether all possible candidates have been tried according to arbitrary criteria
+;; in (:end-search state)
 ;;
-;;
-(defn candidate-exhausted? [ state ]
+(defn stop-search? [ state ]
     (let [ cursor (:cursor state)
-           queens (:queens state) la (:last-allowed state)
-           la-index (first la) la-val (second la) ]
+           queens (:queens state) la (:search-end state)
+           la-index (first la) la-q (second la) la-c (last la)]
 
-        (and (= (inc la-index) (count queens)) (> 0 (compare la-val cursor)))))
+        (and (= (inc la-index) (count queens)) 
+        	 (= (nth queens la-index) la-q)
+        	 (>= 0 (compare cursor la-c)))))
 
 (declare backtrack)
     
@@ -200,7 +208,7 @@
           ]
 	    (cond 	
             (= siz (count queens)) #(self state)    ;; solution found: we're done
-            (candidate-exhausted? state) #(self state) ;; no more solutions
+            (candidate-exhausted? state) #(self state) ;; no more candidates
             (hole-in-queens? :queens cursor)  #(backtrack) ;; no more candidates with current set of queens: backtrack
 
             ;; cursored candidate invalid: move on to the next one

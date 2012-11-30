@@ -175,9 +175,18 @@
         (is (= 1 (getLineId c1 c2)))
         (is (= [[2 1][3 2][4 3][5 4]] line))
         (is (= line (getLine 1)))
-        (is (= line (getLine c1 c2)))     
-)))
-   
+        (is (= line (getLine c1 c2))))))
+        
+        
+        
+(init-cache-and-test isBaseline?-test 5
+   (testing "Should find an existing baseline"
+   		(let [	
+   				c1 [1 1] 
+   				c2 [1 2]
+   				lineId (line-id [1 1] [2 2]) ]
+   				
+   			(is (true? (isBaseline? lineId))))))
 
     
 

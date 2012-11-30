@@ -9,6 +9,10 @@
                                   ;;
                                   ;; The IDs are assumed to be unique and implement hashCode().
                                   ;;
+                                  
+				   :baselines (sorted-set)
+				   			   ;; for fast lookup of whether a line is a baseline, as a set of lineIDs
+				                                     
                    :cell2lines (sorted-map)
                     		  ;; for fast lookup in :lines, of an existing line formation map of cells to line IDs used as
                                   ;; keys to :lines. [x y] -> [line-id-1 line-id-2 line-id-3...].
@@ -37,7 +41,7 @@
                       ;; 
                       ;; Therefore within the same example, using a current value of
                       ;;	 [[nil]
-            	        ;;	 [nil nil]
+            	      ;;	 [nil nil]
                       ;;	 [nil nil nil]
                       ;; 	 [nil nil nil nil]
                       ;; 	 [85  nil nil nil nil]
@@ -153,6 +157,11 @@
     (get (:lines @lookup) lineID)))
     
 ;;
+;; Returns true if a lineId exists and is for a baseline, false otherwise.
+;;    
+(defn isBaseline? [ lineId ] (in? (:baselines @lookup) lineId))
+    
+;;
 ;; Retrieves the size of the grid side.
 ;;    
 (defn getSize [] (:size @lookup))    
@@ -239,13 +248,14 @@
 				(let [ 
               newline (line c1 c2 (:size lu)) 
               newId (:nextId lu)
-              ;; newMatrix (new-matrix c1 c2 newId (:matrix lu))
+              blines (:baselines lu)
+			  newBlines (if (same-baseline? c1 c2) (conj blines newId) blines )
               newMatrix (new-matrix-with-line newId newline (:matrix lu))
               newLines (assoc (:lines lu) newId newline)
               newCell2lines (addline-to-cells newId newline (:cell2lines lu))
               ]
             (merge lu { :lines newLines :matrix newMatrix :nextId (inc newId)
-                        :cell2lines newCell2lines }))))))
+                        :cell2lines newCell2lines :baselines newBlines}))))))
 
 ;;
 ;; An entry point into making an insert atomically into the lookup cache.
@@ -278,6 +288,6 @@
 ;;  
 (defn show-lookup []
   (let [ lu @lookup ]
-    (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) "\n\tMatrix:\n"
-          ;;(format-triangle (:matrix lu) "]" "]\n\t\t")
-          (format-matrix (:matrix lu) (:size lu) "  -  " " " 5)))))
+    (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) 
+    				"\n\tBaselines: " (:baselines lu) "Matrix:\n"
+          				(format-matrix (:matrix lu) (:size lu) "  -  " " " 5)))))
