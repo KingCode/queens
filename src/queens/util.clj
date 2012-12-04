@@ -369,15 +369,16 @@
     (let [ s (inc size) all (for [x (range 1 s) y (range 1 s)] [x y]) ]
         (take (dec (count all)) all)))
         
-;;
-;; Merges a single entry for key from one map into another. The resulting map will
-;; yield the value for key from invoking f with values for keys1 and keys2 from m1 and m2 resp.
-;; All other map entries in the result are those from m1.
-;;
-;; If m1 or m2 are nil, or keys1/2 can't be found in either m1 or m2 at the described
-;; location then m1 is returned.
-;;        
+        
 (defn merge-forkey 
+ "
+ Merges a single entry for key from one map into another. The resulting map will
+ yield the value for key from invoking f with values for keys1 and keys2 from m1 and m2 resp.
+ All other map entries in the result are those from m1.
+
+ If m1 or m2 are nil, or keys1/2 can't be found in either m1 or m2 at the described
+ location then m1 is returned.
+ "
   ([ f m1 [key1 & morekeys1 ] m2 [ key2 & morekeys2 ] ]
     (let [ keys1 (cons key1 morekeys1) keys2 (cons key2 morekeys2) ]
 	  (cond 
@@ -390,14 +391,86 @@
 	([ f m1 [key & morekeys] m2 ]
 	  (let [keys (cons key morekeys)]
 	    (merge-forkey f m1 keys m2 keys))))
-	  
-;;
-;; Yields a new map from merging m1 with value for key(s) from the return of 
-;; (f (get-in m keys) value)
-;;	  
-(defn merge-value [f m1 [key & morekeys] value]
+	    
+(defn merge-value 
+"
+Yields a new map from merging m1 with value for key(s) from the return of 
+(f (get-in m keys) value).
+"
+	[f m1 [key & morekeys] value]
         (merge-forkey f m1 (cons key morekeys) {:dummy-key value} [:dummy-key])) 	  
 	  
-	  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;        
+(defn make-seq
+	[ e ]    
+"
+Yields a sequable of x whether x is a collection or not.
+"
+    (if (coll? e) (seq e) (seq [e])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn is-envelope?
+"
+Yields true if coll has a single element which is also a collection
+"
+    [coll] (cond (empty? coll) false
+           :else
+              (if (and (= 1 (count coll)) (coll? (first coll))) true false)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn unwrap
+"Recursively removes empty wrappers and yields the innermost collection.
+"
+    [coll]
+        (if (is-envelope? coll) (recur (first coll)) coll))
+                
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn distribute
+	[ e coll]
+"
+Distributes element over coll. Yields multiple collections consisting of prepending e
+to each coll elements, e.g. (distribute 1 [1 2 3]) yields ((1 1) (1 2) (1 3))        
+"
+	(unwrap (map #(cons e (make-seq %)) (seq coll))))
+        
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn key-paths
+	[ m ]	
+"
+Yields a sequence of key paths leading to leaf values in a map of maps,
+e.g. (key-paths {:a {:b [1 2]},
+				 :c {:d 
+				  		{:e [3 4],
+				  	   	 :f [5 6] }}}}) 
+yields ( (:a :b) (:c :d :e) (:c :d :f))
+"
+   (if (not (map? m)) m 
+	(let [ ks (keys m) 
+		   func (fn [ k ] 
+		        (let [v (get m k)]
+		            (if (map? v) (distribute k (key-paths v))
+			                  (make-seq k))))
+				;;try to extirpate the inner list from map output
+		 ]
+                    (unwrap (map func ks))
+		 )))				
 		
-	
+
+        	  
+(comment		"
+(defn hierarchy
+	Similar to map, except that both coll and results of applying f are associated in the result.
+	 The yield is a map with coll elements as keys and the result of applying f to each one as values.
+	 
+	 ([ f coll ]
+	 
+	 	(if (not (map? coll))	 	
+	 		(let [ vs (map f coll)
+	 			   kvs (interleave coll vs) ]
+	 		(apply sorted-map kvs))
+"	 		
+)	 		
+	 		
+	 		
+	 		
+	 

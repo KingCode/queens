@@ -416,5 +416,49 @@
 		(is (= nil (next-irregular [5 1] [5 2] 5)))
 		
 ))		
-         
-         
+        
+(deftest is-envelope?-test
+    (testing "Should return true iff a collection is a wrapper around another"
+        (let [ coll-1 [1 2 3] coll-2 [[1][2]] 
+               coll-3 [[1 2 3]]
+               coll-4 [[[[1 2 3]]]]
+               coll-5 (list 1 2 3)
+               coll-6 (list (list 1) (list 2))
+               coll-7 (list (list 1 2 3))
+               coll-8 (list (list (list (list 1 2 3))))
+            ]
+        (is (not (is-envelope? coll-1)))
+        (is (not (is-envelope? coll-2)))
+        (is (is-envelope? coll-3))
+        (is (is-envelope? coll-4))
+        (is (not (is-envelope? coll-5)))
+        (is (not (is-envelope? coll-6)))
+        (is (is-envelope? coll-7))
+        (is (is-envelope? coll-8)))))
+
+(deftest distribute-test
+    (testing "Should distribute an element over a collection"
+        (is (= (list (list 1 1) (list 1 2) (list 1 3)) (distribute 1 [[1][2][3]])))
+        (is (= (list (list :a :b :c :d) (list :a :e)) (distribute :a [(list :b :c :d) (list :e)])))
+))
+ 
+(deftest key-paths-test
+    (testing "Should yield all key-paths leading to values in nested maps, from arg. map"
+        (let [ m {:a 
+                    {:b [1 2]} 
+                     :bb 
+                        {:b1 
+                            {:b2 [7 8] 
+                              :b3 [9 10] 
+                              :b4
+                                  {:b5 [11 12]}}} 
+                      :c {:d {:e [3 4] :f [5 6]}}} 
+                expected (list (list :a :b) (list :a :bb :b1 :b2) (list :a :bb :b1 :b3)
+                            (list :a :bb :b1 :b4 :b5)
+                            (list :a :c :d :e)
+                            (list :a :c :d :f) )
+              ]
+            (is (= expected (key-paths m)))
+    )))
+        
+ 
