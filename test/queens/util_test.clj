@@ -440,25 +440,106 @@
     (testing "Should distribute an element over a collection"
         (is (= (list (list 1 1) (list 1 2) (list 1 3)) (distribute 1 [[1][2][3]])))
         (is (= (list (list :a :b :c :d) (list :a :e)) (distribute :a [(list :b :c :d) (list :e)])))
+        (is (= (list (list :a :b :c) (list :a :d) (list :a :e :f :g)) (distribute :a (list (list :b :c) :d (list :e :f :g)))))
 ))
  
-(deftest key-paths-test
+
+(deftest unfold-test
+	(testing "Should remove outermost nesting of sub sequences only"
+		(let [
+				;; (1 2 3 (4 5)) -> (1 2 3 4 5)
+				one (unfold (list 1 2 3 (list 4 5)))
+				exp_one (list 1 2 3 4 5)
+								
+				;; (1 (1) (2) (3) 4 5) -> (1 2 3 4 5)
+				two (unfold (list (list 1) (list 2) (list 3) 4 5))
+				exp_two (list 1 2 3 4 5)
+				
+				;; ((1 2) (4 (5 6))) -> (1 2 4 (5 6))
+				three (unfold (list (list 1 2) (list 4 (list 5 6)))) 
+				exp_three (list 1 2 4 (list 5 6))
+				
+				;; (((::bb :b1 :b3) (:bb :b1 :b2) (:bb :b1 :b4 :b5)) :b) -> ((::bb :b1 :b3) (:bb :b1 :b2) (:bb :b1 :b4 :b5) :b)
+				four  (unfold (list (list (list :bb :b1 :b3) (list :bb :b1 :b2) (list :bb :b1 :b4 :b5)) :b))
+				exp_four (list (list :bb :b1 :b3) (list :bb :b1 :b2) (list :bb :b1 :b4 :b5) :b)
+			 ]
+			 
+			(is (= exp_one one))
+			(is (= exp_two two))
+			(is (= exp_three three))
+			(is (= exp_four four))
+)))			
+
+
+(defn vkpr 
+"Verify key-path result. Ensures that contents are the same, not considering order.
+"
+	[expected result]
+		(let [num-exp (count expected)]
+			(= num-exp (count (map #(some #{%} expected) result)))))
+
+(deftest key-paths_and_leaves-test
     (testing "Should yield all key-paths leading to values in nested maps, from arg. map"
-        (let [ m {:a 
-                    {:b [1 2]} 
+        (let [ m1 {:a 
+                    {:b [1 2] 
                      :bb 
                         {:b1 
                             {:b2 [7 8] 
                               :b3 [9 10] 
                               :b4
-                                  {:b5 [11 12]}}} 
-                      :c {:d {:e [3 4] :f [5 6]}}} 
-                expected (list (list :a :b) (list :a :bb :b1 :b2) (list :a :bb :b1 :b3)
-                            (list :a :bb :b1 :b4 :b5)
-                            (list :a :c :d :e)
-                            (list :a :c :d :f) )
+                                  {:b5 [11 12]}}}} 
+                   :c {:d {:e [3 4] :f [5 6]}}} 
+
+                m1-exp (list (list :a :b) (list :a :bb :b1 :b2) 
+                   			 (list :a :bb :b1 :b3) (list :a :bb :b1 :b4 :b5) 
+                   			 (list :c :d :e) (list :c :d :f))                   			                    			 
+                   			 
+                m1-leaves (list [1 2] [7 8] [9 10] [11 12] [3 4] [5 6])
+                   			 
+				m2 {:a 1 :b 2 :c 3 :d 4}
+				
+				m2-exp (list :a :b :c :d)
+				
+				m2-leaves (list 1 2 3 4)
+				
+				m3 {:a {:b {:c {:d {:e "enough"}}}}}
+				m3-exp (list (list :a :b :c :d :e))
+				m3-leaves (list "enough")
+				
+				m4 {:a 1 
+					:b { 
+						:c 2 
+						:d 3 
+						:e 
+							{:f 4 :g 5}}
+					:h 6
+					:i { :j 7}
+					:k { :l 8 :m 9}
+				   }
+				   
+			   m4-exp (list :a 
+			   		   (list :b :c) 
+			   		   (list :b :d)
+			   		   (list :b :e :f)
+			   		   (list :b :e :g)
+			   		   :h
+			   		   (list :i :j)
+			   		   (list :k :l)
+			   		   (list :k :m))
+				                   		
+			   m4-leaves (list 1 2 3 4 5 6 7 8 9)
               ]
-            (is (= expected (key-paths m)))
+            (is (vkpr m1-exp (key-paths m1)))
+            (is (vkpr m1-leaves (leaves m1)))
+            (is (vkpr m2-exp (key-paths m2)))
+            (is (vkpr m2-leaves (leaves m2)))            
+            (is (vkpr m3-exp (key-paths m3)))
+            (is (vkpr m3-leaves (leaves m3)))            
+            (is (vkpr m4-exp (key-paths m4)))
+            (is (vkpr m4-leaves (leaves m4)))            
+            (is (= (list) (key-paths {})))            
+            (is (= 3) (key-paths 3))
+            (is (= nil (key-paths nil)))            
     )))
-        
+      
  

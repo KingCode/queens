@@ -404,9 +404,9 @@ Yields a new map from merging m1 with value for key(s) from the return of
 (defn make-seq
 	[ e ]    
 "
-Yields a sequable of x whether x is a collection or not.
+Yields a sequable of x. If not a collection, x is wrapped in a single-element list.
 "
-    (if (coll? e) (seq e) (seq [e])))
+    (if (coll? e) (seq e) (list e)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn is-envelope?
@@ -419,58 +419,141 @@ Yields true if coll has a single element which is also a collection
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn unwrap
-"Recursively removes empty wrappers and yields the innermost collection.
+"Recursively removes empty wrappers and yields the innermost non-empty single element collection.
 "
     [coll]
         (if (is-envelope? coll) (recur (first coll)) coll))
                 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn distribute
-	[ e coll]
+(defn unfold
+"Extracts the outermost nested collections into the top-level containing collection.
+ Example:
+ 	(unfold (((:bb :b1 :b3) (:bb :b1 :b2) (:bb :b1 :b4 :b5)) :b)) yields
+ 		((:bb :b1 :B3) (:bb b1 :b2) (:bb :b1 :b4 :b5) :b)
 "
-Distributes element over coll. Yields multiple collections consisting of prepending e
-to each coll elements, e.g. (distribute 1 [1 2 3]) yields ((1 1) (1 2) (1 3))        
-"
-	(unwrap (map #(cons e (make-seq %)) (seq coll))))
+	([acc coll]
+		;;;;(do (println "UNFOLD acc=" acc ", coll=" coll)
+		(let [c (make-seq coll) f (make-seq (first c))]
+			(if (empty? c) acc
+				(let [ newacc (concat acc f) ]
+					(recur newacc (rest c))))))
+	( [coll]
+		(unfold (list) coll)))
         
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn distribute
+"
+Distributes element over each collection arg. Yields a list of multiple sequences consisting 
+of prepending e to each argument. Each collection is transformed into a seqable. 
+If an element is not a collection it is wrapped inside a seqable.
+
+Examples:
+	(distribute 1 [1 2 3]) yields ((1 1) (1 2) (1 3))        
+	(distribute :a ((:b :c) :d (:e :f :g)) yields ((:a :b :c) (:a :d) (:a :e :f :g))
+"
+  ( [ e coll] 
+	(unwrap (map #(cons e (make-seq %)) (make-seq coll))))
+
+ ( [ e coll & others ]
+ 	(let [ head (cons e (make-seq coll))
+           more (distribute e others) 
+          ]
+          (concat (list head) more))))
+         
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn de-nest
+"
+Yields a sequence containing coll elements with elements of nested lists of lists extracted
+into the top-level, e.g. ((:a) ((:b :c) (:c :d)) (:e :f)) yields ((:a) (:b :c) (:c :d) (:e :f))
+"
+	([acc coll]	
+		(if (empty? coll) acc
+			(let [ i (first coll) 
+			   	   newacc 
+			   	   	(if (and (coll? i) (< 1 (count i)) (coll? (first i))) 
+			   	   					(concat acc i) 
+			   	   					(concat acc (list i)))
+			 	]			 
+			 (recur newacc (rest coll)))))
+			 
+    ( [coll] (de-nest (list) coll)))
+			
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn key-paths
-	[ m ]	
 "
 Yields a sequence of key paths leading to leaf values in a map of maps,
-e.g. (key-paths {:a {:b [1 2]},
+Example 1: (key-paths {:a {:b [1 2]},
 				 :c {:d 
 				  		{:e [3 4],
 				  	   	 :f [5 6] }}}}) 
-yields ( (:a :b) (:c :d :e) (:c :d :f))
-"
-   (if (not (map? m)) m 
-	(let [ ks (keys m) 
-		   func (fn [ k ] 
-		        (let [v (get m k)]
-		            (if (map? v) (distribute k (key-paths v))
-			                  (make-seq k))))
-				;;try to extirpate the inner list from map output
-		 ]
-                    (unwrap (map func ks))
-		 )))				
-		
+	yields a collection with the same contents as ( (:a :b) (:c :d :e) (:c :d :f))
 
-        	  
-(comment		"
-(defn hierarchy
-	Similar to map, except that both coll and results of applying f are associated in the result.
-	 The yield is a map with coll elements as keys and the result of applying f to each one as values.
+Example 2: (key-paths {:a 
+                    	 {:b [1 2] 
+                    	  :bb 
+                    	     {:b1 
+                    	         { :b2 [7 8] 
+                    	           :b3 [9 10] 
+                    	           :b4
+                    	               {:b5 [11 12]}}}} 
+                   	   :c {:d {:e [3 4] :f [5 6]}}} )
+                   
+	yields a collection with the same contents as  
+	( (:a :b) (:a :bb :b1 :b2) (:a ;bb :b1 :b3) (:a :bb :b1 :b4 :b5)
+		(:c :d :e) (:c :d :f) )
+"
+ [ m ]	
+   (if (not (map? m)) m
+	(let [ 
+		ks (sort (keys m)) 
+		func (fn [ k ] 
+				(let [
+					v (get m k)
+		        	kpv (key-paths v)
+		        ]
+		          (if (map? v) (distribute k kpv)
+			      	(make-seq k))))
+			                  
+	 ]
+	 (de-nest (map func ks)))))		
 	 
-	 ([ f coll ]
-	 
-	 	(if (not (map? coll))	 	
-	 		(let [ vs (map f coll)
-	 			   kvs (interleave coll vs) ]
-	 		(apply sorted-map kvs))
+(defn leaves
+"
+Yields a sequence of all leaf values of m, i.e. all non-map values of m, 
+including those within nested associative structures.
+"	 		
+  [ m ]
+  	(let [ kp (key-paths m) ]
+  		(map #(get-in m %) kp)))
+		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;        	  
+;;Generates a hierarchy of maps where each argument sequence element
+;;is a key and values are either maps to elements of the next sequence argument,
+;;or a sequence element if the next sequence is the last argument - a leaf value.
+
+;;If using a filtering predicate, only those elements of the following sequence,
+;;for which (pred key elem) returns true, are kept.
+
+;;(defn map-for 
+(comment
+"
+Intended for use in constructing a comprehension as if using
+clojure.core/for with runtime bindings.
+
+CURRENTLY using a single collection for both keys and values, and repeated
+calls to pred, which must
+	 		
+([ acc coll in-filter out-filter ]
+	(let [ c (count coll)
+		   ks (values acc)
+		mappings (for [ x-i (range c) :when (in-filter)
+						y-i (range c) :when (out-filter)
+					  ]
+					(
+				
+	
+	
+	out (filter #(pred coll)
 "	 		
 )	 		
-	 		
-	 		
-	 		
 	 
