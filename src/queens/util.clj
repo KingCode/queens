@@ -517,6 +517,7 @@ Example 2: (key-paths {:a
 	 ]
 	 (de-nest (map func ks)))))		
 	 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn leaves
 "
 Yields a sequence of all leaf values of m, i.e. all non-map values of m, 
@@ -526,7 +527,17 @@ including those within nested associative structures.
   	(let [ kp (key-paths m) ]
   		(map #(get-in m %) kp)))
 		
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;        	  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn kp-map
+"
+Yields a map containing key-paths of m as keys and (leaves m) as values.
+Keys are serialized into strings and can be deserialized using de/serialize-kp
+"
+  [ m ]
+    (let [ kps (key-paths m)
+          ;; newkeys (serialize-kp kps)
+        ]
+          true))	  
 ;;Generates a hierarchy of maps where each argument sequence element
 ;;is a key and values are either maps to elements of the next sequence argument,
 ;;or a sequence element if the next sequence is the last argument - a leaf value.
@@ -543,11 +554,11 @@ clojure.core/for with runtime bindings.
 CURRENTLY using a single collection for both keys and values, and repeated
 calls to pred, which must
 	 		
-([ acc coll in-filter out-filter ]
+([ acc coll pred 
 	(let [ c (count coll)
-		   ks (values acc)
+		ks (values acc)
 		mappings (for [ x-i (range c) :when (in-filter)
-						y-i (range c) :when (out-filter)
+				y-i (range c) :when (out-filter)
 					  ]
 					(
 				
