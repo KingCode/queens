@@ -291,3 +291,28 @@
     (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) 
     				"\n\tBaselines: " (:baselines lu) "Matrix:\n"
           				(format-matrix (:matrix lu) (:size lu) "  -  " " " 5)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;          				
+(defn cell-id 
+"Deterministically computes the unique ID for cell in the current grid size.
+ Although not (currently) used internally, it is more convenient to use IDs than cell
+ coordinates as mapping keys.
+"
+	[ [x y] ]
+	(let [len (:size @lookup)]
+		(+ (* (dec x) len) (dec y))))
+		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn cell-for
+"Yields the cell coordinates for cell with 'id'. Id must be consistent with 
+ cell-id func.
+"
+	[ id ]
+	(let [len (:size @lookup)
+		  rows (quot id len)
+		  cols (mod id len)
+		 ]
+		 [ (inc rows) (inc cols) ] ))
+		
+	
+          				

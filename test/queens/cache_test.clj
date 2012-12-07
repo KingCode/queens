@@ -187,6 +187,190 @@
    				lineId (line-id [1 1] [2 2]) ]
    				
    			(is (true? (isBaseline? lineId))))))
-
+   			
+   			
+(init-cache-and-test cell-id_and_cell-for-test 5
+	(testing "Should deterministically calculate a unique ID for a cell 
+			  and vice versa."
+		(let [
+				c1 [1 1]
+				exp1 0
+				ci1 (cell-id c1)
+				cf1 (cell-for exp1)
+				
+				c2 [1 2]
+				exp2 1
+				ci2 (cell-id c2)
+				cf2 (cell-for exp2)
+				
+				c3 [1 4]
+				exp3 3
+				ci3 (cell-id c3)
+				cf3 (cell-for exp3)
+				
+				c4 [1 5]
+				exp4 4
+				ci4 (cell-id c4)
+				cf4 (cell-for exp4)
+				
+				c5 [2 1]
+				exp5 5
+				ci5 (cell-id c5)
+				cf5 (cell-for exp5)
+				
+				c6 [2 3]
+				exp6 7
+				ci6 (cell-id c6)
+				cf6 (cell-for exp6)
+				
+				c7 [2 4]
+				exp7 8
+				ci7 (cell-id c7)
+				cf7 (cell-for exp7)
+				
+				c8 [2 5]
+				exp8 9
+				ci8 (cell-id c8)
+				cf8 (cell-for exp8)
+				
+				c9 [3 1]
+				exp9 10
+				ci9 (cell-id c9)
+				cf9 (cell-for exp9)
+				
+				c10 [3 2]
+				exp10 11
+				ci10 (cell-id c10)
+				cf10 (cell-for exp10)
+				
+				c11 [3 4]
+				exp11 13
+				ci11 (cell-id c11)
+				cf11 (cell-for exp11)
+				
+				c12 [3 5]
+				exp12 14
+				ci12 (cell-id c12)
+				cf12 (cell-for exp12)
+				
+				c13 [4 1]
+				exp13 15
+				ci13 (cell-id c13)
+				cf13 (cell-for exp13)
+				
+				c14 [4 3]
+				exp14 17
+				ci14 (cell-id c14)
+				cf14 (cell-for exp14)
+				
+				c15 [4 5]
+				exp15 19
+				ci15 (cell-id c15)
+				cf15 (cell-for exp15)
+				
+				c16 [5 1]
+				exp16 20
+				ci16 (cell-id c16)
+				cf16 (cell-for exp16)
+				
+				c17 [5 2]
+				exp17 21
+				ci17 (cell-id c17)
+				cf17 (cell-for exp17)
+				
+				c18 [5 3]
+				exp18 22
+				ci18 (cell-id c18)
+				cf18 (cell-for exp18)
+				
+				c19 [5 4]
+				exp19 23
+				ci19 (cell-id c19)
+				cf19 (cell-for exp19)
+				
+				c20 [5 5]
+				exp20 24
+				ci20 (cell-id c20)
+				cf20 (cell-for exp20)
+		]
     
+	(is (= exp1 ci1))
+	(is (= c1 cf1))
 
+	(is (= exp2 ci2))
+	(is (= c2 cf2))
+
+	(is (= exp3 ci3))
+	(is (= c3 cf3))
+	
+	(is (= exp4 ci4))
+	(is (= c4 cf4))
+
+	(is (= exp5 ci5))
+	(is (= c5 cf5))
+
+	(is (= exp6 ci6))
+	(is (= c6 cf6))
+	
+	(is (= exp7 ci7))
+	(is (= c7 cf7))
+
+	(is (= exp8 ci8))
+	(is (= c8 cf8))
+
+	(is (= exp9 ci9))
+	(is (= c9 cf9))
+		
+	(is (= exp10 ci10))
+	(is (= c10 cf10))
+
+	(is (= exp11 ci11))
+	(is (= c11 cf11))
+
+	(is (= exp12 ci12))
+	(is (= c12 cf12))
+	
+	(is (= exp13 ci13))
+	(is (= c13 cf13))
+
+	(is (= exp14 ci14))
+	(is (= c14 cf14))
+
+	(is (= exp15 ci15))
+	(is (= c15 cf15))
+	
+	(is (= exp16 ci16))
+	(is (= c16 cf16))
+
+	(is (= exp17 ci17))
+	(is (= c17 cf17))
+
+	(is (= exp18 ci18))
+	(is (= c18 cf18))
+	
+	(is (= exp19 ci19))
+	(is (= c19 cf19))
+
+	(is (= exp20 ci20))
+	(is (= c20 cf20))
+
+)))	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

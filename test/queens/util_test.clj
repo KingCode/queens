@@ -442,7 +442,6 @@
         (is (= (list (list :a :b :c :d) (list :a :e)) (distribute :a [(list :b :c :d) (list :e)])))
         (is (= (list (list :a :b :c) (list :a :d) (list :a :e :f :g)) (distribute :a (list (list :b :c) :d (list :e :f :g)))))
 ))
- 
 
 (deftest unfold-test
 	(testing "Should remove outermost nesting of sub sequences only"
@@ -470,16 +469,70 @@
 			(is (= exp_four four))
 )))			
 
+ 
+(deftest is-envelope?-test2
+	(testing "Should detect superfluous nested wrappers"
+		(let [ arg1 '(1 2 3 4 (5 6))
+			   exp1 false
+			   
+			   arg2 '((1 2 3))
+			   exp2 true
+			   
+			   arg3 '((((((1))))))
+			   exp3 true
+			   
+			   arg4 '(([:a :b]))
+			   exp4 true
+			   
+			   arg5 '(([1 2]) ([3 4]))
+			   exp5 false
+			 ]
+			 
+		(is (= exp1 (is-envelope? arg1)))
+		(is (= exp2 (is-envelope? arg2)))
+		(is (= exp3 (is-envelope? arg3)))
+		(is (= exp4 (is-envelope? arg4)))
+		(is (= exp5 (is-envelope? arg5))))))
 
+
+(deftest unwrap-test
+	(testing "Should get rid of superfluous nested wrappers"
+		(let [ arg1 '(1 2 3 4 (5 6))
+			   exp1 arg1
+			   
+			   arg2 '((1 2 3))
+			   exp2 '(1 2 3)
+			   
+			   arg3 '((((((1))))))
+			   exp3 '(1)
+			   
+			   arg4 '(([:a :b]))
+			   exp4 '[:a :b]
+			   
+			   arg5 '(([1 2]) ([3 4]))
+			   exp5 arg5
+			 ]
+			 
+		(is (= exp1 (unwrap arg1)))
+		(is (= exp2 (unwrap arg2)))
+		(is (= exp3 (unwrap arg3)))
+		(is (= exp4 (unwrap arg4)))
+		(is (= exp5 (unwrap arg5))))))
+
+		
 (defn vkpr 
-"Verify key-path result. Ensures that contents are the same, not considering order.
+"Verify key-path result. Ensures that actual and expected values are the same, not considering order.
 "
-	[expected result]
-		(let [num-exp (count expected)]
-			(= num-exp (count (map #(some #{%} expected) result)))))
+	[expected actual] 
+		;; Every 'actual' elem is found in 'expected' and vice-versa
+		(and (every? (fn [ arg] (some #(= arg %) expected)) actual)
+			(= (count actual) (count expected))))
 
 (deftest key-paths_and_leaves-test
-    (testing "Should yield all key-paths leading to values in nested maps, from arg. map"
+    (testing "Should yield all key-paths leading to values in nested maps, from arg. map
+    		 Furthermore, each key-paths element must yield the correct value using clojure.core/get-in.
+    		 Also testing leaves function."
+    		 
         (let [ m1 {:a 
                     {:b [1 2] 
                      :bb 
@@ -490,21 +543,20 @@
                                   {:b5 [11 12]}}}} 
                    :c {:d {:e [3 4] :f [5 6]}}} 
 
-                m1-exp (list (list :a :b) (list :a :bb :b1 :b2) 
-                   			 (list :a :bb :b1 :b3) (list :a :bb :b1 :b4 :b5) 
-                   			 (list :c :d :e) (list :c :d :f))                   			                    			 
+                m1-exp '((:a :b) (:a :bb :b1 :b2) (:a :bb :b1 :b3) (:a :bb :b1 :b4 :b5)
+                		  (:c :d :e) (:c :d :f))
                    			 
-                m1-leaves (list [1 2] [7 8] [9 10] [11 12] [3 4] [5 6])
+                m1-leaves '([1 2] [7 8] [9 10] [11 12] [3 4] [5 6])
                    			 
 				m2 {:a 1 :b 2 :c 3 :d 4}
 				
-				m2-exp (list :a :b :c :d)
+				m2-exp '((:a) (:b) (:c) (:d))
 				
-				m2-leaves (list 1 2 3 4)
+				m2-leaves '(1 2 3 4)
 				
 				m3 {:a {:b {:c {:d {:e "enough"}}}}}
-				m3-exp (list (list :a :b :c :d :e))
-				m3-leaves (list "enough")
+				m3-exp '((:a :b :c :d :e))
+				m3-leaves '("enough")
 				
 				m4 {:a 1 
 					:b { 
@@ -517,17 +569,17 @@
 					:k { :l 8 :m 9}
 				   }
 				   
-			   m4-exp (list :a 
-			   		   (list :b :c) 
-			   		   (list :b :d)
-			   		   (list :b :e :f)
-			   		   (list :b :e :g)
-			   		   :h
-			   		   (list :i :j)
-			   		   (list :k :l)
-			   		   (list :k :m))
+			   m4-exp '( (:a)
+			   		   (:b :c) 
+			   		   (:b :d)
+			   		   (:b :e :f)
+			   		   (:b :e :g)
+			   		   (:h)
+			   		   (:i :j)
+			   		   (:k :l)
+			   		   (:k :m))
 				                   		
-			   m4-leaves (list 1 2 3 4 5 6 7 8 9)
+			   m4-leaves '(1 2 3 4 5 6 7 8 9)
               ]
             (is (vkpr m1-exp (key-paths m1)))
             (is (vkpr m1-leaves (leaves m1)))
@@ -536,10 +588,62 @@
             (is (vkpr m3-exp (key-paths m3)))
             (is (vkpr m3-leaves (leaves m3)))            
             (is (vkpr m4-exp (key-paths m4)))
-            (is (vkpr m4-leaves (leaves m4)))            
+            (is (vkpr m4-leaves (leaves m4)))     
+            
+            ;;border/degenerate cases       
             (is (= (list) (key-paths {})))            
             (is (= 3) (key-paths 3))
             (is (= nil (key-paths nil)))            
     )))
       
- 
+(deftest serialize_and_deserialize-kp-test
+ 	(testing "Should serialize and deserialize keypaths and from map accurately"
+ 		(let [
+ 				;;; Using m4 from key-paths_and_leaves-test above:
+ 				;;; as the backing map for kps biding
+ 				m 	{:a 1 
+					:b { 
+						:c 2 
+						:d 3 
+						:e 
+							{:f 4 :g 5}}
+					:h 6
+					:i { :j 7}
+					:k { :l 8 :m 9}
+				   }
+ 				
+ 				;;also copied from previous test's 
+				kps '((:a) (:b :c) (:b :d) (:b :e :f) (:b :e :g) (:h) (:i :j) (:k :l)(:k :m))
+				
+				ser (serialize-kp kps)				
+				serm (serialize-kp m)
+				exp-ser "'((:a) (:b :c) (:b :d) (:b :e :f) (:b :e :g) (:h) (:i :j) (:k :l) (:k :m))"
+				
+				deser (deserialize-kp ser)
+				exp-deser kps
+			]
+			(is (= exp-ser ser))
+			(is (= exp-ser serm))
+			(is (= exp-deser deser)))
+		
+		;;; border/degenerate cases
+		(is (= "'()" (serialize-kp '())))
+		(is (= "'()" (serialize-kp {})))
+))
+
+
+(deftest kp-path-test
+	(testing "Should generate a new map consisting of key-paths and associated values from an existing map"
+		(let [ 
+			m1 {:a 1 :b 2 :c 3}
+			exp1 { "'(:a)" 1 "'(:b)" 2 "'(:c)" 3}
+			
+			m2 {:a { :a1 1 :a2 2} :b 3 :c { :d {:e 4 :f { :g 5}}}}
+			exp2  { "'(:a :a1)" 1 "'(:a :a2)" 2 "'(:b)" 3 "'(:c :d :e)" 4 "'(:c :d :f :g)" 5}
+			
+			]
+			
+		 (is (= exp1 (kp-map m1)))
+		 (is (= exp2 (kp-map m2)))
+)))		 
+	

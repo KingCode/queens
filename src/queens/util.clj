@@ -422,8 +422,8 @@ Yields true if coll has a single element which is also a collection
 "Recursively removes empty wrappers and yields the innermost non-empty single element collection.
 "
     [coll]
-        (if (is-envelope? coll) (recur (first coll)) coll))
-                
+        (if (is-envelope? coll) (recur (first coll)) coll))                
+        
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn unfold
 "Extracts the outermost nested collections into the top-level containing collection.
@@ -481,7 +481,10 @@ into the top-level, e.g. ((:a) ((:b :c) (:c :d)) (:e :f)) yields ((:a) (:b :c) (
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn key-paths
 "
-Yields a sequence of key paths leading to leaf values in a map of maps,
+Yields a sequence of key paths leading to leaf values in a map of maps.
+Mapping keys within the argument structure must not be collections or sequences,
+except for strings.
+
 Example 1: (key-paths {:a {:b [1 2]},
 				 :c {:d 
 				  		{:e [3 4],
@@ -528,16 +531,51 @@ including those within nested associative structures.
   		(map #(get-in m %) kp)))
 		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn serialize-kp 
+"
+Yields a string representing of a seq. of key paths and extracts the 
+key paths if the argument is a map.
+"  		
+	[ kp-or-map ]	
+	(let [ kpom kp-or-map
+		   arg (if (map? kpom) (key-paths kpom) kpom)
+		   as-list (apply list (vec arg))
+		  ]
+		  
+		  ;;This because <empty list>.toString() yields 
+		  ;;an objec reference address, 
+		  ;;as does java.lang.Object.toString() ?!
+		  ;;Maybe due to being a constant. 
+		  
+		  (if (empty? as-list) 	"'()" 
+		  			(str "'" as-list))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn deserialize-kp
+"
+Deserializes argument previously serialized using serialize-kp.
+Yields a list, elements of which are usable with clojure.core/get-in.
+"
+	[ serialized ]
+		(load-string serialized))
+  		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn kp-map
 "
 Yields a map containing key-paths of m as keys and (leaves m) as values.
 Keys are serialized into strings and can be deserialized using de/serialize-kp
 "
   [ m ]
-    (let [ kps (key-paths m)
-          ;; newkeys (serialize-kp kps)
-        ]
-          true))	  
+	(let [ kp (key-paths m)		   
+	       kpv (map #(get-in m %) kp)
+	       raw (interleave kp kpv)
+	       pairs (partition 2 raw)
+	       kvs-pairs (map #(let [key (first %) val (second %)] (list (serialize-kp key) val)) pairs)
+	       kvs (unfold kvs-pairs)
+	       ]
+	      (apply sorted-map kvs)))
+	      
+	      
 ;;Generates a hierarchy of maps where each argument sequence element
 ;;is a key and values are either maps to elements of the next sequence argument,
 ;;or a sequence element if the next sequence is the last argument - a leaf value.
@@ -556,7 +594,7 @@ calls to pred, which must
 	 		
 ([ acc coll pred 
 	(let [ c (count coll)
-		ks (values acc)
+		   
 		mappings (for [ x-i (range c) :when (in-filter)
 				y-i (range c) :when (out-filter)
 					  ]

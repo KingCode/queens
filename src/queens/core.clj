@@ -255,3 +255,12 @@
 ;;            qn (inc-pos q)          ]  
 ;;       (if (empty? qn)  #(self nil)
           ;;prune :hotcells 
+
+          
+(comment "          
+(defn partial-solutions-for
+ Emits a set of partial solutions, each prefixed with queens and
+  with one element added at the end
+
+	[ queens ] 
+")	
