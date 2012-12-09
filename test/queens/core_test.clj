@@ -39,13 +39,6 @@
         (is (= [[1 11] [5 6] [9 1]] (line-with [1 11] [5 6])))
         (is (= [[2 10] [3 8] [4 6] [5 4] [6 2]] (line-with [2 10] [3 8])))))
 
-(def-btest add-queen-test 4 [] {}
-    (testing "Should add a queen to existing ones"
-        (add-queen [1 2])
-        (is (= [[1 2]] (:queens @state)))
-        (add-queen [3 4])
-        (add-queen [2 2])
-        (is (= [[1 2] [3 4] [2 2]]))))
 
 (def-btest same-baseline-any-test 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
     (testing "Should detect whether a cell is on the same baseline as existing queens"

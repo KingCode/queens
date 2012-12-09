@@ -70,12 +70,30 @@
           (< b a) #(gcd_op (- a b) b)
           :else   #(gcd_op a (- b a))))
 
+
+;;
+(defn fast-gcd 
+"Yields the gcd using clojure's native integer division"
+[a b]
+    (let [ sorted (sort [a b])
+           small (first sorted)
+           big (second sorted)
+           q (/ big small)
+           qs (str q)
+         ]
+     (if (> 0 (.indexOf qs "/")) small
+        (let [
+           q-parts (.split qs "/")
+           big2 (Integer/valueOf (first q-parts))
+           small2 (Integer/valueOf (second q-parts))
+         ]
+        (/ small small2) ))))
 ;;
 ;; Returns the greatest common divisor between two non-negative, non-zero integers.
 ;; This should not be used with zero value argument(s), or this function will never exit.
 ;;           
-(defn gcd [a b] (trampoline (gcd_op a b)))
-
+(defn gcd [a b]  ;; (trampoline (gcd_op a b)))
+    (fast-gcd a b))
 ;;
 ;; Returns the smallests slope increments between any two sorted neighbouring cells of 
 ;; the line segment defined by the argument cells, as a vector containing the row and column differentials,
@@ -583,26 +601,18 @@ Keys are serialized into strings and can be deserialized using de/serialize-kp
 ;;If using a filtering predicate, only those elements of the following sequence,
 ;;for which (pred key elem) returns true, are kept.
 
-;;(defn map-for 
-(comment
+(defn demux 
 "
-Intended for use in constructing a comprehension as if using
-clojure.core/for with runtime bindings.
-
-CURRENTLY using a single collection for both keys and values, and repeated
-calls to pred, which must
-	 		
-([ acc coll pred 
-	(let [ c (count coll)
-		   
-		mappings (for [ x-i (range c) :when (in-filter)
-				y-i (range c) :when (out-filter)
-					  ]
-					(
-				
-	
-	
-	out (filter #(pred coll)
+Constructs outputs combining the input and elements of coll for which 
+(pred e) returns true. If provided and for better performance, pruner can 
+pre-filter elements before processing by pred. 
+Yields a sequence of the result of invoking (comb in e), where e is in coll.
 "	 		
-)	 		
+([ in coll pred comb pruner ]	
+	(for [ e coll :when (and (pruner e) (pred e)) ]
+		(comb in e)))
+					
+([ in coll pred comb ]					
+	(demux in coll pred comb (fn[_](self true)))))
 	 
+

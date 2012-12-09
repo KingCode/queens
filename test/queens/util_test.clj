@@ -645,5 +645,43 @@
 			
 		 (is (= exp1 (kp-map m1)))
 		 (is (= exp2 (kp-map m2)))
-)))		 
+)))		
+
+(deftest demux-test
+	(testing "Should demultiplex an input into a collection from applying filter and predicates"
+		(let [
+				in1 1
+				coll1 [2 3 4 5 6 7 8 9]
+				comb1 +
+				pred1 even?
+				prune1 #(< % 8)
+				
+				exp1 '(3 5 7)
+				act1 (demux in1 coll1 pred1 comb1 prune1)
+				
+				exp1b '(3 5 7 9)
+				act1b (demux in1 coll1 pred1 comb1)
+				
+				
+				in2 [[1 1] [2 3]]
+				coll2 (for [ x (range 1 4) y (range 1 4) ] [x y])
+				comb2 #(concat %1 [%2])
+				pred2 (fn [c] (not (in? (map #(first %) in2) (first c))))
+				prune2 #(not (in? in2 %))
+				prune2b (fn [_] false)
+				
+				exp2 '(([1 1] [2 3] [3 1]) ([1 1] [2 3] [3 2]) ([1 1] [2 3] [3 3]))
+				exp2b '()
+				
+				act2 (demux in2 coll2 pred2 comb2 prune2)
+				act2b (demux in2 coll2 pred2 comb2 prune2b)
+				
+			]
+			
+		  	(is (= exp1 act1))
+		  	(is (= exp1b act1b))
+		  	(is (= exp2 act2))
+		  	(is (= exp2b act2b))
+		  	
+)))		  	
 	
