@@ -11,60 +11,54 @@
 
 
 (defn share-baseline? 
-	"Returns true if any of the argument cells share a baseline, and false otherwise"
-	([c1 c2]	
-		;;(do (println "ShareBaseline c1=" c1 ", c2=" c2)
-		(isBaseline? (line-id c1 c2)))
-	([c1 c2 & cs]		
-		(let [ all (concat [c1 c2] cs),
-			   pairs (cb/combinations all 2) ]
-				(< 0 (count (filter #(share-baseline? (first %) (second %)) pairs))))))		
-				
-(defn share-line-query? 
-	"Returns true if in the argument cells, any two share a baseline or any three share a non-baseline; false otherwise"	 	 
-	
-	 ([c1 c2] (share-baseline? c1 c2))
-	 
-	 ([c1 c2 c3]
-	 	(if (share-baseline? c1 c2 c3) true
-	 		(let [ line-1 (line-id c1 c2) line-2 (line-id c1 c3) ]
-	 			(= line-1 line-2))))
-	 	
-	 ([c1 c2 c3 & cs]
-	 	(let [ all (concat [c1 c2 c3] cs),
-	 		   triples (cb/combinations all 3) ]
-	 		   (< 0 (count (filter #(share-line-query? (first %) (second %) (last %)) triples))))))
-	 	 
+"Returns true if any of the argument cells share a baseline, and false otherwise
+"
+  ([c1 c2]	
+    (isBaseline? (line-id c1 c2)))
+  ([c1 c2 & cs]		
+    (let [ all (concat [c1 c2] cs),
+           pairs (cb/combinations all 2) ]
+	(< 0 (count (filter #(share-baseline? (first %) (second %)) pairs))))))		
 
-	 		   
-	 		   
-(comment "	 		   
-(defn free-cells 
-	Composes a hierarchy of all free cells for each leaf element in the input collection, 
-	 i.e. each leaf sub-sequence meets the criteria (not (share-line-query? from-input-cell cell) 
-	 for the corresponding input-cell in the argument. If the input list is a hierarchy,
-	 a corresponding hierarchy is generated with leaf sub-sequences for each leaf in the input.
+(defn share-baseline-coll?
+"Returns true if cell shares a baseline with any cell in coll. Yields nil otherwise.
+"
+    [coll cell]
+        (let [ shared (map #(share-baseline? % cell) coll) 
+             ]
+          (some true? shared)))
 
-	([ N acc all] 
-		(if (zero? N) acc
-			(let [ diff (cs/difference (set all) (set acc))
-				   latest (filter #(not (apply share-line-query? (conj acc %))) diff) ]
-				(recur (dec N) (conj acc latest) all))))
-	
-	([ N start ] 		
-		(let [sel (cb/selections (range 1 (inc N)) 2),
-			  const (vec (map vec sel)) ]
-			  	(compose N [ start ] const)))
-		
-	([ N ] (compose N [1 1])))
-	
-")
-	
+(defn share-line?
+"
+Yields true if any three cells share any line. If only two arguments,
+yields true if the shared line is a baseline. False otherwise.
+"
+    ([ c1 c2 ] (share-baseline? c1 c2))
+    ([ c1 c2 c3 ]
+        (let [ line-1 (line-id c1 c2) line-2 (line-id c1 c3) ]
+	 			(= line-1 line-2)))
+    ([ c1 c2 c3 & cs ]
+	(let [ all (concat [c1 c2 c3] cs),
+               triples (cb/combinations all 3) ]
+	   (< 0 (count (filter #(share-line? (first %) (second %) (last %)) triples))))))
 
-		
-	
+(defn share-line-coll?
+"
+Yields true if cell shares a line with any two cells in coll, and nil otherwise.
+If nb is true (the default if not provided), baselines are not considered.
+"
+  ([acc coll cell nb]
+    (let [ c1 (first coll)
+           new-lid (line-id c1 cell)
+           c1-lids (getLineIds c1)
+           cell-lids (getLineIds cell)
+           all (concat c1-lids cell-lids)
+           filtered (if nb (filter #(not (isBaseline? %)) all) all)
+           badones (more-than filtered 2)
+        ]           
+        (if (not (empty? badones)) true
+            (recur (concat acc filtered) (rest coll) cell nb)))) 
+  
+  ([ coll cell nb ] (share-line-coll? '() coll cell nb))
 
-	
-
-
-	
+  ([ coll cell ] (share-line-coll? coll cell true))) 

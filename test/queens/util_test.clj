@@ -685,3 +685,57 @@
 		  	
 )))		  	
 	
+(deftest counts_and_more-than_test
+    (testing "Should count all coll elements"
+        (let [
+                itms1 '(1 2 1 3 1 4 1 2)
+                exp1 { 1 4, 2 2, 3 1, 4 1}
+                act1 (counts itms1)
+                lim1-1 1
+                expm1-1 '(1 2)
+                actm1-1 (more-than itms1 lim1-1)
+                lim1-2 2
+                expm1-2 '(1)
+                actm1-2 (more-than itms1 lim1-2)
+                lim1-3 4 
+                expm1-3 '()
+                actm1-3 (more-than itms1 lim1-3)
+
+                itms2 '(:a :a :a)
+                exp2 {:a 3}
+                act2 (counts itms2)
+                lim2-1 2
+                expm2-1 '(:a)
+                actm2-1 (more-than itms2 lim2-1)
+                lim2-2 3
+                expm2-2 '()
+                actm2-2 (more-than itms2 lim2-2)
+
+                itms3 '(:a :b :c :a :b :c :d :c :b :f)
+                exp3 { :a 2, :b 3, :c 3, :d 1 :f 1}
+                act3 (counts itms3)
+                lim3-1 1
+                expm3-1 '(:a :b :c)
+                actm3-1 (more-than itms3 lim3-1)
+                lim3-2 2
+                expm3-2 '(:b :c)
+                actm3-2 (more-than itms3 lim3-2)
+                lim3-3 3
+                expm3-3 '()
+                actm3-3 (more-than itms3 lim3-3)
+            ]
+
+            (is (= exp1 act1))
+            (is (= expm1-1 actm1-1))
+            (is (= expm1-2 actm1-2))
+            (is (= expm1-3 actm1-3))
+    
+            (is (= exp2 act2))
+            (is (= expm2-1 actm2-1))
+            (is (= expm2-2 actm2-2))
+            
+            (is (= exp3 act3))
+            (is (= expm3-1 actm3-1))
+            (is (= expm3-2 actm3-2))
+            (is (= expm3-3 actm3-3))
+)))

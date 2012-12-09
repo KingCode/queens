@@ -13,12 +13,15 @@
 		(is (= false (share-baseline? [1 2] [3 3] [2 5])))
 		))			
 
-(comment
-(init-cache-and-test compose-test 5 
-	(testing "Should compose a compliant candidate solution"
-		(println (compose 5))
-		(is (= 5 (count (compose 5 [1 1]))))
-		
-		))
-		)
-		
+(init-cache-and-test share-line?-test 7
+    (testing "Should tell whether two cells share a baseline or any three 
+              any other"
+        (is (share-line? [1 1] [2 2]))
+        (is (share-line? [1 1] [2 3] [3 5]))
+        (is (share-line? [1 1] [2 4] [3 7]))
+        (is (share-line? [1 1] [3 5] [4 7]))
+        (is (share-line? [1 1] [3 2] [5 3]))
+        (is (share-line? [1 4] [3 3] [5 2]))
+        (is (share-line? [1 6] [4 4] [7 2]))
+        (is (not (share-line? [1 5] [4 4] [7 2])))
+))

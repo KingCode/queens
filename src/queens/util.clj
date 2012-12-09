@@ -594,12 +594,31 @@ Keys are serialized into strings and can be deserialized using de/serialize-kp
 	      (apply sorted-map kvs)))
 	      
 	      
-;;Generates a hierarchy of maps where each argument sequence element
-;;is a key and values are either maps to elements of the next sequence argument,
-;;or a sequence element if the next sequence is the last argument - a leaf value.
+(defn counts
+"
+Yields a map of distinct elements in coll to the number of times each one appears.
+"
+  ([acc coll]
+    (if (empty? coll) acc
+      (let [ k (first coll)
+           v (get acc k)
+           numfs (if (nil? v) 0 v)
+           newacc (assoc acc k (inc numfs))
+        ]
+        (recur newacc (rest coll)))))
 
-;;If using a filtering predicate, only those elements of the following sequence,
-;;for which (pred key elem) returns true, are kept.
+  ([coll] (counts (sorted-map) coll)))
+
+(defn more-than
+"
+Yields a lazy sequence of elements of coll which appear more than limit times.
+"
+  [coll limit]
+    (let [ m (counts coll)
+           kvs (seq m) 
+           less (filter #(let [num (second %)] (< limit num)) kvs)
+        ]
+        (map #(first %) less)))        
 
 (defn demux 
 "

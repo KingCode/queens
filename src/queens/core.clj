@@ -1,5 +1,6 @@
 (ns queens.core
-	(:use queens.util queens.state queens.cache))
+	(:use queens.util queens.state queens.cache queens.lookup))
+(require '(clojure.math [combinatorics :as cb]))
 
 (defn occupied? [[x y]]  (coll-pred (:queens @state) #(same? % [x y])))
 
@@ -56,9 +57,10 @@
           
 (comment "          
 (defn inc-set
- Emits a set of partial solutions , each prefixed with queens and
-  with one compatible element added at the end which 
+Emits a set of partial solutions , each starting  with queens and
+one element added. 
 
   [ queens state ]	
-	(let [ coll (lazy-seq
+	(let [  pool (candidates)
+                
 ")	

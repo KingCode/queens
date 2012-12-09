@@ -60,7 +60,7 @@
 		              ;; A map of sequences of cell IDs to lazy-seq's of grid cells susbsets used 
 		              ;; as a source to pick candidates from.
 		              ;;
-						:candidates {}						
+                                :candidates {}						
 								                
 }))   
 
@@ -72,15 +72,16 @@
 ;;
 (defn init-lookup 
   ( [ size startId] 
+    (let [limit (inc size)]
       (reset! lookup 
           { :lines (sorted-map)
             :cell2lines (sorted-map)            
             :matrix (generate-triangle size)
             :size size 
             :nextId startId            
-            :candidates (for [ limit (inc size) x (range 1 limit) y (range 1 limit) ]
+            :candidates (for [ x (range 1 limit) y (range 1 limit) ]
             						[x y])
-            }))
+            })))
             
   ( [ size ]
     (init-lookup size 0)))
@@ -175,6 +176,7 @@
 ;;    
 (defn getSize [] (:size @lookup))    
 
+(defn candidates [] (:candidates @lookup))
 ;;;;;;;;;;;;;;;;;;;;;;;;                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;; END, ACCESSOR FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;                         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
