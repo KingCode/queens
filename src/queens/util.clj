@@ -95,12 +95,28 @@
            small2 (Integer/valueOf (second q-parts))
          ]
         (/ small small2) ))))
+
+(defn faster-gcd
+"
+Yields the gcd using clojure.lang.ratio, numerator, denominator fields
+"
+[a b]
+    (let [ sorted (sort [a b])
+           small (first sorted)
+           big (second sorted)
+           q (/ big small)
+        ]
+      (if (not (instance? clojure.lang.Ratio q)) small
+        (let [ n (.numerator q)
+               d (.denominator q)
+            ]
+          (/ small d)))))
 ;;
 ;; Returns the greatest common divisor between two non-negative, non-zero integers.
 ;; This should not be used with zero value argument(s), or this function will never exit.
 ;;           
 (defn gcd [a b]  ;; (trampoline (gcd_op a b)))
-    (fast-gcd a b))
+    (faster-gcd a b))
 ;;
 ;; Returns the smallests slope increments between any two sorted neighbouring cells of 
 ;; the line segment defined by the argument cells, as a vector containing the row and column differentials,
