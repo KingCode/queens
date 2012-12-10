@@ -11,6 +11,13 @@
 
 (defn append [ coll1 coll2] (vec (concat coll1 coll2)))
 
+(defn conj-end 
+"Yields a sequence where elem is appended to coll as its last element.
+"
+  [ coll elem ]
+    (let [v (vec coll)]
+        (seq (conj v elem))))
+
 (defn same? [ c1 c2 ]
 	(cond (empty? c1) false
 	      (empty? c2) false

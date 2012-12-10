@@ -1,6 +1,6 @@
 (ns queens.core
 	(:use queens.util queens.state queens.cache queens.lookup))
-(require '(clojure.math [combinatorics :as cb]))
+(require '(clojure [set :as cs]))
 
 (defn occupied? [[x y]]  (coll-pred (:queens @state) #(same? % [x y])))
 
@@ -54,13 +54,22 @@
     ([] (verify [] (:queens @state) [])))   
 
           
+(defn shared-baseline-filter
+    [queens c] (not (share-baseline-coll? queens c)))
           
-(comment "          
-(defn inc-set
-Emits a set of partial solutions , each starting  with queens and
-one element added. 
+(defn overloaded-line-filter
+    [queens c] (not (share-line-coll? queens c)))
 
-  [ queens state ]	
-	(let [  pool (candidates)
-                
-")	
+(defn inc-set
+"
+Emits a set of partial solutions , each starting  with queens and
+one element added. If none is found an empty sequence is returned. 
+"
+  [ queens ]	
+	(let [  q (set queens)
+                pool (sort (cs/difference (set (candidates)) q))
+                cfilter #(shared-baseline-filter queens %)
+                cpred #(overloaded-line-filter queens %)
+                combinator #(conj-end %1 %2)
+            ]
+            (demux queens pool cpred combinator cfilter)))

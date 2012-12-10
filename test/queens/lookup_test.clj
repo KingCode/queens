@@ -25,3 +25,26 @@
         (is (share-line? [1 6] [4 4] [7 2]))
         (is (not (share-line? [1 5] [4 4] [7 2])))
 ))
+
+(init-cache-and-test share-baseline-coll?-test 5
+    (testing "Should return true at the first found baseline relation if any, false otherwise"
+        (let [ coll1 '([1 1] [2 4]) 
+               c1-1 [2 2]
+               c1-2 [3 5]
+               c1-3 [5 3]
+
+               exp1-1 true
+               act1-1 (share-baseline-coll? coll1 c1-1)
+
+               exp1-2 true
+               act1-2 (share-baseline-coll? coll1 c1-2)
+
+               exp1-3 false
+               act1-3 (share-baseline-coll? coll1 c1-3)
+            ]
+          (is (= exp1-1 act1-1))
+          (is (= exp1-2 act1-2))
+          (is (= exp1-3 act1-3))
+)))
+             
+      

@@ -2,6 +2,7 @@
   (:use clojure.test
 	queens.test-util
         queens.core
+        queens.cache
         queens.state))
 
 (def-btest occupied-test 5 [[1 1] [2 4] [3 2] [4 5] [5 3]] {}
@@ -109,3 +110,31 @@
 (def-btest verify-test-7 5 [ [1 4] [2 2] [4 3] [5 1]] {}
         (testing "Should validate a compliant collection, even though not a complete solution (size 5)"
             (is (verify))))
+
+(init-cache-and-test inc-set-test 3
+    (testing "Should yield all partial solutions for current queens, size 3"
+        (let [ q1 '([1 1])
+               exp1 '(([1 1] [2 3]) ([1 1][3 2]))
+               act1 (inc-set q1)
+            
+               q2 '([1 1] [2 3])
+               exp2 '()
+               act2 (inc-set q2)
+
+               q3 '([1 2])
+               exp3 '([1 2][3 1])
+               act3 (inc-set q3)
+               ]
+            (is (= exp1 act1))
+            (is (= exp2 act2))
+            (is (= exp3 act3))
+)))
+
+(init-cache-and-test inc-set-test 4
+    (testing "Should yield all partial solutions for current queens, size 4"
+        (let [ q1 '([1 1])
+               exp1 '(([1 1][2 3]) ([1 1][2 4]) ([1 1] [3 2]) ([1 1][3 4]) ([1 1][4 2]) ([1 1][4 3]))
+               act1 (inc-set q1)
+            ]
+        (is (= exp1 act1))
+)))

@@ -24,9 +24,10 @@
 "Returns true if cell shares a baseline with any cell in coll. Yields nil otherwise.
 "
     [coll cell]
-        (let [ shared (map #(share-baseline? % cell) coll) 
-             ]
-          (some true? shared)))
+        (cond (empty? coll) false
+            (share-baseline? (first coll) cell) true
+            :else
+                (recur (rest coll) cell)))
 
 (defn share-line?
 "
@@ -48,7 +49,8 @@ Yields true if cell shares a line with any two cells in coll, and nil otherwise.
 If nb is true (the default if not provided), baselines are not considered.
 "
   ([acc coll cell nb]
-    (let [ c1 (first coll)
+    (if (empty? coll) false
+      (let [ c1 (first coll)
            new-lid (line-id c1 cell)
            c1-lids (getLineIds c1)
            cell-lids (getLineIds cell)
@@ -57,7 +59,7 @@ If nb is true (the default if not provided), baselines are not considered.
            badones (more-than filtered 2)
         ]           
         (if (not (empty? badones)) true
-            (recur (concat acc filtered) (rest coll) cell nb)))) 
+            (recur (concat acc filtered) (rest coll) cell nb))))) 
   
   ([ coll cell nb ] (share-line-coll? '() coll cell nb))
 
