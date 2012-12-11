@@ -1,6 +1,6 @@
 (ns queens.util)
 
-(def DEBUG false)
+(def DEBUG true)
 
 (defn id-generator []
     (let [id (atom 0)]
@@ -659,6 +659,7 @@ Yields a sequence of the result of invoking (comb in e), where e is in coll.
 ([ in coll pred comb ]					
 	(demux in coll pred comb (fn[_](self true)))))
 	 
+(declare collect) 
 
 (defn redux	
 "
@@ -668,12 +669,21 @@ If f yields a value for which (empty? value) is true before then, an empty list 
 f must have an arity for args and yield a sequence of colls.
 "
   ([ acc depth limit f ]
+    (when DEBUG 
+      (println "redux: ACC=" acc ", DEPTH=" depth "(limit=" limit ", f=" f))
 	(if (< limit depth) acc
-	  (let [ result (apply f acc) ]		
-		(if (empty? result) '()
-		   #(map 			
-				(fn [ e ] (redux e (inc depth) limit f)) 
-					result)))))
+	  (let [ results (f acc) ]		
+	    (if (empty? results) '()
+	        #(collect results depth limit f)))))
 
   ([ seed limit f ]
   		(trampoline (redux seed 1 limit f))))
+
+(defn collect 
+"
+Collects results from invoking redux ot the next depth level up to limit,
+on each sub collection of 'parts'. 
+"
+ [ parts depth limit f ]
+   true) 
+
