@@ -2,6 +2,15 @@
 	(:use queens.util queens.state queens.cache queens.lookup))
 (require '(clojure [set :as cs]))
 
+(comment
+"
+	
+"
+)
+
+
+
+
 (defn occupied? [[x y]]  (coll-pred (:queens @state) #(same? % [x y])))
 
 ;; Wrapper around -> SEE queens.util/same-baseline-from [(:queens @state) cell
@@ -59,17 +68,25 @@
           
 (defn overloaded-line-filter
     [queens c] (not (share-line-coll? queens c)))
+    
+    
+(defn candidate-pred
+"
+Performs approval on c's compatibility with all elements of queens
+"
+[queens c]
+	(and (shared-baseline-filter queens c) (overloaded-line-filter queens c)))
 
 (defn inc-set
 "
 Emits a set of partial solutions , each starting  with queens and
-one element added. If none is found an empty sequence is returned. 
+one element added with its row coordinate next to the last of queens. 
+If none is found an empty sequence is returned. 
 "
   [ queens ]	
-	(let [  q (set queens)
-                pool (sort (cs/difference (set (candidates)) q))
-                cfilter #(shared-baseline-filter queens %)
-                cpred #(overloaded-line-filter queens %)
-                combinator #(conj-end %1 %2)
-            ]
-            (demux queens pool cpred combinator cfilter)))
+	(let [ [lx ly] (last queens)		
+           pool (candidates-row (inc lx))
+           cpred #(candidate-pred queens %)
+           combinator #(conj-end %1 %2)
+		]
+     (demux queens pool cpred combinator)))

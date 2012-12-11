@@ -739,3 +739,20 @@
             (is (= expm3-2 actm3-2))
             (is (= expm3-3 actm3-3))
 )))
+
+(comment
+(deftest redux-test
+	(testing "Should convert an initial collection into a sequence of collections using an appropriate function"
+		(let [
+				f (fn [coll] (map #(if (< % 3) '() (range 1 %)) (rest coll)))
+				
+				args [5 4 3 2 1]
+			
+				exp '((1 2 3 4) (1 2 3) (1 2) () ())
+				
+				act (redux args 5 f)	
+			]
+			
+		  (is (= exp act))
+)))
+)	

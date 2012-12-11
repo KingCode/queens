@@ -1,5 +1,7 @@
 (ns queens.util)
 
+(def DEBUG false)
+
 (defn id-generator []
     (let [id (atom 0)]
         (fn [] (swap! id inc) )))
@@ -658,3 +660,20 @@ Yields a sequence of the result of invoking (comb in e), where e is in coll.
 	(demux in coll pred comb (fn[_](self true)))))
 	 
 
+(defn redux	
+"
+Invokes f repeatedly up to limit times, in which case f's latest output is returned. 
+If f yields a value for which (empty? value) is true before then, an empty list is returned.
+
+f must have an arity for args and yield a sequence of colls.
+"
+  ([ acc depth limit f ]
+	(if (< limit depth) acc
+	  (let [ result (apply f acc) ]		
+		(if (empty? result) '()
+		   #(map 			
+				(fn [ e ] (redux e (inc depth) limit f)) 
+					result)))))
+
+  ([ seed limit f ]
+  		(trampoline (redux seed 1 limit f))))

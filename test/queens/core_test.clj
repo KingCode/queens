@@ -112,29 +112,65 @@
             (is (verify))))
 
 (init-cache-and-test inc-set-test 3
-    (testing "Should yield all partial solutions for current queens, size 3"
+    (testing "Should yield all incremental partial solutions for current queens, size 3"
         (let [ q1 '([1 1])
-               exp1 '(([1 1] [2 3]) ([1 1][3 2]))
+               exp1 '(([1 1] [2 3]))
                act1 (inc-set q1)
-            
+                           
                q2 '([1 1] [2 3])
                exp2 '()
                act2 (inc-set q2)
-
-               q3 '([1 2])
-               exp3 '([1 2][3 1])
+               
+               q2 '([1 3])
+               exp2 '(([1 3][2 1]))
+               act2 (inc-set q2)               
+              
+               q3 '([2 2])
+               exp3 '()
                act3 (inc-set q3)
-               ]
-            (is (= exp1 act1))
+              ]
+              
+            (is (= exp1 act1))            
             (is (= exp2 act2))
             (is (= exp3 act3))
 )))
 
-(init-cache-and-test inc-set-test 4
-    (testing "Should yield all partial solutions for current queens, size 4"
+
+(init-cache-and-test inc-set-test2 4
+    (testing "Should yield all incremental partial solutions for current queens, size 4"
         (let [ q1 '([1 1])
-               exp1 '(([1 1][2 3]) ([1 1][2 4]) ([1 1] [3 2]) ([1 1][3 4]) ([1 1][4 2]) ([1 1][4 3]))
+               exp1 '(([1 1][2 3]) ([1 1][2 4]))
                act1 (inc-set q1)
+               
+               q2 '([1 1][2 3])
+               exp2 '()
+               act2 (inc-set q2)
+               
+               q3 '([1 1][2 4])
+               exp3 '(([1 1][2 4][3 2]))
+               act3 (inc-set q3)
+               
+               q4 '([1 1][2 4][3 2])
+               exp4 '()
+               act4 (inc-set q4)
+               
+               q5 '([1 2])
+               exp5 '(([1 2][2 4]))
+               act5 (inc-set q5)
+               
+               q6 '([1 2][2 4])
+               exp6 '(([1 2][2 4][3 1]))
+               act6 (inc-set q6)
+               
+               q7 '([1 2][2 4][3 1])
+               exp7 '(([1 2][2 4][3 1][4 3]))
+               act7 (inc-set q7)               
             ]
         (is (= exp1 act1))
+        (is (= exp2 act2))
+        (is (= exp3 act3))
+        (is (= exp4 act4))
+        (is (= exp5 act5))
+        (is (= exp6 act6))
+        (is (= exp7 act7))
 )))

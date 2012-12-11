@@ -64,3 +64,20 @@ If nb is true (the default if not provided), baselines are not considered.
   ([ coll cell nb ] (share-line-coll? '() coll cell nb))
 
   ([ coll cell ] (share-line-coll? coll cell true))) 
+  
+
+(defn candidates-row 
+"
+Yields an ordered sub-sequence of all candidates on row.
+If row is out of range, nil is returned.
+"
+  [row]
+  (let [size (:size @lookup)]
+  	(cond (< size row) nil
+  		  (< row 1) nil
+  		:else
+  		(for [ y (range 1 (inc (:size @lookup))) ] [ row y]))))
+	
+	    
+  
+  
