@@ -82,11 +82,25 @@ Performs approval on c's compatibility with all elements of queens
 Emits a set of partial solutions , each starting  with queens and
 one element added with its row coordinate next to the last of queens. 
 If none is found an empty sequence is returned. 
+
+If queens is already full (one for each row), it is a complete solution:
+true is returned.
 "
   [ queens ]	
-	(let [ [lx ly] (last queens)		
+  	(if (= (getSize) (count queens)) true
+	  (let [ [lx ly] (last queens)		
            pool (candidates-row (inc lx))
            cpred #(candidate-pred queens %)
            combinator #(conj-end %1 %2)
-		]
-     (demux queens pool cpred combinator)))
+		  ]
+     	(demux queens pool cpred combinator))))
+
+     	
+(defn solutions 
+"
+Yields all possible solutions for the argument size.
+"     	
+  [ size ]
+  	(init-lookup size)
+  	(for [ y (range 1 (inc size)) ]
+  		(redux inc-set (list [1 y])) ))

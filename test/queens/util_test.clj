@@ -740,19 +740,46 @@
             (is (= expm3-3 actm3-3))
 )))
 
-(comment
+
 (deftest redux-test
 	(testing "Should convert an initial collection into a sequence of collections using an appropriate function"
 		(let [
-				f (fn [coll] (map #(if (< % 3) '() (range 1 %)) (rest coll)))
+				f1 (fn [coll] (cond (empty? coll) nil 
+								   (some #(> % 20) coll) nil
+								   (some #(= % 10) coll) true 
+								:else 
+									(map #(* 2 %) coll)))
 				
-				args [5 4 3 2 1]
-			
-				exp '((1 2 3 4) (1 2 3) (1 2) () ())
+				args1-1 [1 2 3 4 5 6 7 8 9]						
+				exp1-1 ['(2 4 6 8 10 12 14 16 18)]				
+				act1-1 (redux f1 args1-1)	
 				
-				act (redux args 5 f)	
+				args1-2 '(3 7)
+				exp1-2 '()
+				act1-2 (redux f1 args1-2)
+				
+				
+				f2 (fn [coll] (cond (empty? coll) nil
+									(in? coll [2 3]) true
+									(< 5 (count coll)) '()
+								:else
+									(let [[x y] (last coll)]
+										(conj coll [(inc x) (inc y)]))))
+				args2-1 '([1 1][2 2])
+				exp2-1  '()
+				act2-1 (redux f2 args2-1)
+				
+				args2-2 '([1 2])
+				exp2-2  ['([2 3][1 2])]
+				act2-2 (redux f2 args2-2)				
 			]
 			
-		  (is (= exp act))
+		  (is (= exp1-1 act1-1))
+		  (is (= exp1-2 act1-2))
+		  (is (= exp2-1 act2-1))
+		  (is (= exp2-2 act2-2))
 )))
-)	
+
+
+
+	

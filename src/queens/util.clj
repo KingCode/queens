@@ -650,40 +650,55 @@ Yields a lazy sequence of elements of coll which appear more than limit times.
 Constructs outputs combining the input and elements of coll for which 
 (pred e) returns true. If provided and for better performance, pruner can 
 pre-filter elements before processing by pred. 
-Yields a sequence of the result of invoking (comb in e), where e is in coll.
+Yields a sequence of the result of invoking (comb in e).
 "	 		
 ([ in coll pred comb pruner ]	
 	(for [ e coll :when (and (pruner e) (pred e)) ]
 		(comb in e)))
 					
 ([ in coll pred comb ]					
-	(demux in coll pred comb (fn[_](self true)))))
-	 
-(declare collect) 
+	(demux in coll pred comb (fn[_](self true)))))	 
 
-(defn redux	
+(defn- redux-op
 "
-Invokes f repeatedly up to limit times, in which case f's latest output is returned. 
-If f yields a value for which (empty? value) is true before then, an empty list is returned.
+Invokes f with the first element of acc unless acc is empty, in which case result is returned.
+Otherwise recursion occurs according to the following scenarios in order.
 
-f must have an arity for args and yield a sequence of colls.
+- If f returns true then the element is removed from acc and conj'ed to result.  
+- If f yields a value for which (empty? value) is true, the element is discarded.
+- Else f's output replaces the element, i.e. invocations occur in depth-first traversal.   
+
+f must have arity compatible with acc elements, and must make progress over time, 
+i.e. return true or false/nil eventually.
 "
-  ([ acc depth limit f ]
+  [ f acc results ]
     (when DEBUG 
-      (println "redux: ACC=" acc ", DEPTH=" depth "(limit=" limit ", f=" f))
-	(if (< limit depth) acc
-	  (let [ results (f acc) ]		
-	    (if (empty? results) '()
-	        #(collect results depth limit f)))))
+      (println "redux-op: ACC=" acc ", RESULTS=" results))
+	(if (empty? acc) results
+	  (let [ arg (first acc) 
+	  		 out (f arg) 
+	  		 racc (rest acc)
+	  		 newacc 
+	  		 	(cond (true? out) racc
+	  		 		  (empty? out) racc	  		 		
+	  		 	 :else (concat (list out) racc))
+	  		 newresults
+	  		 	(if (true? out) (conj results arg) 
+	  		 		results)
+	  		]		
+		(recur f newacc newresults))))
 
-  ([ seed limit f ]
-  		(trampoline (redux seed 1 limit f))))
-
-(defn collect 
+(defn redux
 "
-Collects results from invoking redux ot the next depth level up to limit,
-on each sub collection of 'parts'. 
-"
- [ parts depth limit f ]
-   true) 
+Invokes a 1-arity function on init-arg. f is invoked repeatedly with its own outputs 
+as arguments to subsequent calls, until all have been processed. 
+When f yields true its input is collected and returned from this function.
 
+If results-coll is provided more control is possible over the collection because
+successive results are conj'ed onto it.
+"
+	([ f init-arg ]
+		(redux f init-arg []))
+		
+	([ f init-arg results-coll ]
+		(redux-op f (list init-arg) results-coll)))
