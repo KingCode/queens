@@ -740,7 +740,7 @@
             (is (= expm3-3 actm3-3))
 )))
 
-
+(comment 
 (deftest redux-test
 	(testing "Should convert an initial collection into a sequence of collections using an appropriate function"
 		(let [
@@ -760,11 +760,11 @@
 				
 				
 				f2 (fn [coll] (cond (empty? coll) nil
-									(in? coll [2 3]) true
-									(< 5 (count coll)) '()
-								:else
-									(let [[x y] (last coll)]
-										(conj coll [(inc x) (inc y)]))))
+					            (in? coll [2 3]) true
+						    (< 5 (count coll)) '()
+						:else
+					            (let [[x y] (last coll)]
+					                (conj coll [(inc x) (inc y)]))))
 				args2-1 '([1 1][2 2])
 				exp2-1  '()
 				act2-1 (redux f2 args2-1)
@@ -772,6 +772,11 @@
 				args2-2 '([1 2])
 				exp2-2  ['([2 3][1 2])]
 				act2-2 (redux f2 args2-2)				
+
+                                f3 (fn [coll] (cond (some #(< 3 (count %)) coll) true
+                                                    (empty? coll) nil
+                                                    :else 
+                                                        (map #(conj % [45 2]) coll)))
 			]
 			
 		  (is (= exp1-1 act1-1))
@@ -779,6 +784,7 @@
 		  (is (= exp2-1 act2-1))
 		  (is (= exp2-2 act2-2))
 )))
+)
 
 
 

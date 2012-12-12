@@ -1,6 +1,6 @@
 (ns queens.util)
 
-(def DEBUG true)
+(def UTIL_DEBUG false)
 
 (defn id-generator []
     (let [id (atom 0)]
@@ -672,18 +672,16 @@ f must have arity compatible with acc elements, and must make progress over time
 i.e. return true or false/nil eventually.
 "
   [ f acc results ]
-    (when DEBUG 
+    (when UTIL_DEBUG 
       (println "redux-op: ACC=" acc ", RESULTS=" results))
 	(if (empty? acc) results
 	  (let [ arg (first acc) 
-	  		 out (f arg) 
-	  		 racc (rest acc)
-	  		 newacc 
-	  		 	(cond (true? out) racc
-	  		 		  (empty? out) racc	  		 		
-	  		 	 :else (concat (list out) racc))
-	  		 newresults
-	  		 	(if (true? out) (conj results arg) 
+	  	      out (f arg) 
+	  	      racc (rest acc)
+	  	      newacc (cond (true? out) racc
+	  		 	   (empty? out) racc	  		 		
+	  		 	   :else (concat out racc))
+	              newresults (if (true? out) (conj results arg) 
 	  		 		results)
 	  		]		
 		(recur f newacc newresults))))

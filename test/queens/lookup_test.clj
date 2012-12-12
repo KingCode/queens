@@ -46,5 +46,14 @@
           (is (= exp1-2 act1-2))
           (is (= exp1-3 act1-3))
 )))
-             
-      
+
+(init-cache-and-test share-line-coll?-test 5
+    (testing "Should return true at the first found line relation if any, false otherwise"
+        (let [ col1 '([1 1][2 3])
+               c1 [3 5]
+               exp1 true
+               act1 (share-line-coll? col1 c1)
+             ]
+
+        (is (= exp1 act1))
+)))

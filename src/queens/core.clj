@@ -89,11 +89,11 @@ true is returned.
   [ queens ]	
   	(if (= (getSize) (count queens)) true
 	  (let [ [lx ly] (last queens)		
-           pool (candidates-row (inc lx))
-           cpred #(candidate-pred queens %)
-           combinator #(conj-end %1 %2)
-		  ]
-     	(demux queens pool cpred combinator))))
+                 pool (candidates-row (inc lx))
+                 cpred #(candidate-pred queens %)
+                 combinator #(conj-end %1 %2)
+		]
+     	    (demux queens pool cpred combinator))))
 
      	
 (defn solutions 
