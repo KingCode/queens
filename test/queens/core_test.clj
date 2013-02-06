@@ -62,7 +62,7 @@
 )))     )   
 
             
-(def-btest verify-test-withargs 11 [] {}
+(init-cache-and-test verify-test-withargs 11 [] {}
     (testing "Should verify a compliant candidate solution and invalidate others"
         (is (verify [] [[1 1]] []))
         (is (verify [[1 1]] [[3 2]] []))
@@ -75,41 +75,48 @@
         (is (not (verify [] [[1 1] [2 2] [3 2] [5 5]] [])))
 ))      
 
-(def-btest verify-test-1 11 [[1 1] [3 2] [5 3] [7 4] [9 5]] {}
+(init-cache-and-test verify-test-1 11 
 	(testing "Should verify that the current state is a valid solution, even though incomplete"
-		(is (not (verify)))
+	  (let [ qs [[1 1] [3 2] [5 3] [7 4] [9 5]] ]
+		(is (not (verify qs))))
 ))		
 	  
 ;;2 4 7 1 8 11 5 3 9 6 10
-(def-btest verify-test-2 11 [[1 2] [2 4] [3 7] [4 1] [5 8] [6 11] [7 5] [8 3] [9 9] [10 6] [11 10]] {}
-	(testing "Should verify that the current state is a valid solution (size 11)"
-		(is (verify))))
+(init-cache-and-test verify-test-2 11 
+	(testing "Should verify that the current state is a valid solution (size 11)"		
+	  (let [ qs [[1 2] [2 4] [3 7] [4 1] [5 8] [6 11] [7 5] [8 3] [9 9] [10 6] [11 10]] ]
+		(is (verify qs)))))
 
 ;;1 3 12 10 7 2 11 5 8 13 9 4 6
-(def-btest verify-test-3 13 [ [1 1] [2 3] [3 12] [4 10] [5 7] [6 2] [7 11] [8 5] [9 8] [10 13] [11 9] [12 4] [13 6]] {}
+(init-cache-and-test verify-test-3 13 
 	(testing "Should verify that the current state is a valid solution (size 13)"
-		(is (verify))))
+	  (let [qs [ [1 1] [2 3] [3 12] [4 10] [5 7] [6 2] [7 11] [8 5] [9 8] [10 13] [11 9] [12 4] [13 6]] ]
+		(is (verify qs)))))
 
 ;;1 3 5 7 2 4 6
-(def-btest verify-test-4 7 [ [1 1] [2 3] [3 5] [4 7] [5 2] [6 4] [7 6]] {}
+(init-cache-and-test verify-test-4 7 
 	(testing "Should invalidate the current state if not compliant (size 7)"
-		(is (not (verify)))))
+	  (let [ qs [ [1 1] [2 3] [3 5] [4 7] [5 2] [6 4] [7 6]] ]
+		(is (not (verify qs))))))
 
 ;;4 2 5 3 1
-(def-btest verify-test-5 5 [ [1 4] [2 2] [3 5] [4 3] [5 1]] {}        
+(init-cache-and-test verify-test-5 5 
 	(testing "Should invalidate a non compliant solution (size 5)"
-		(is (not (verify)))))
+	  (let [ qs [ [1 4] [2 2] [3 5] [4 3] [5 1]] ]
+		(is (not (verify qs))))))
 
 ;;4 2 5 3 (remove last cell from previous)
-(def-btest verify-test-6 5 [ [1 4] [2 2] [3 5] [4 3]] {}
+(init-cache-and-test verify-test-6 5 
         (testing "Should validate a compliant collection, even tough not a complete solution (size 5)"
-            (is (verify))))
+          (let [ qs [ [1 4] [2 2] [3 5] [4 3]] ]
+            (is (verify qs)))))
 
 
 ;;4 2 3 1 (remove first of last three cells from verify-test-5)
-(def-btest verify-test-7 5 [ [1 4] [2 2] [4 3] [5 1]] {}
+(init-cache-and-test verify-test-7 5 
         (testing "Should validate a compliant collection, even though not a complete solution (size 5)"
-            (is (verify))))
+          (let [ qs [ [1 4] [2 2] [4 3] [5 1]] ]
+            (is (verify qs)))))
 
 (init-cache-and-test inc-set-test 3
     (testing "Should yield all incremental partial solutions for current queens, size 3"

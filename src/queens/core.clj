@@ -51,16 +51,15 @@
             error-links (query-cells-with compliant usedlines candidate) ]
        (cond 
             (empty? remainder) true
-            (not (empty? error-links))  
-                            (do (assoc @state :error { candidate error-links}) false) 
+            (not (empty? error-links))  false
+                            ;;(do (assoc @state :error { candidate error-links}) false) 
           :else
-            (let [ newlines (irregular-lines compliant candidate (:size @state)) ]
+            (let [ newlines (irregular-lines compliant candidate (getSize)) ]
             (recur (conj compliant candidate) (next remainder) (append usedlines newlines))))))
 
-;; Verifies independently (without changing the state) that all queens currently in (:queens @state) 
-;; comply with the rules.
+;; Verifies that queens satisfy the constraints of the puzzle 
             
-    ([] (verify [] (:queens @state) [])))   
+    ([queens] (verify [] queens [])))   
 
           
 (defn shared-baseline-filter
@@ -85,6 +84,9 @@ If none is found an empty sequence is returned.
 
 If queens is already full (one for each row), it is a complete solution:
 true is returned.
+
+Lookup cache is assumed to have been fully initialized, e.g. using 
+queens.cache/init-lookup.
 "
   [ queens ]	
   	(if (= (getSize) (count queens)) true
@@ -95,12 +97,53 @@ true is returned.
 		]
      	    (demux queens pool cpred combinator))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     	    
+(defn inc-set-lite
+"
+Same as inc-set, except that verification occurs without use of a lookup cache.
+Necessary when grid size is over 40 and lookup is memory based - however time cost 
+is much higher. 
+
+queens must be sorted by row col order. The lookup cache is assumed to have its size and 
+candidates initialized, e.g. using queens.cache/init-lookup-lite.
+"     	    
+ [queens]
+ 	(if (= (getSize) (count queens)) true
+	  (let [ [lx ly] (last queens)		
+		pool (candidates-row (inc lx))
+        cpred #(verify (concat queens (list %)))
+        combinator #(conj-end %1 %2)
+        ]
+     	(demux queens pool cpred combinator))))
      	
+     	
+     	
+(defn- done-by-max?
+	[ max coll ] (println "done-by-max? MAX=" max ", COLL=" coll)
+		(and (< 0 max) (<= max (count coll))))
+		
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;     	
 (defn solutions 
 "
-Yields all possible solutions for the argument size.
+Yields all possible solutions for the argument size. If use-lu is used and set to true
+the lookup is fully initialized using queens.cache/init-lookup; otherwise 
+queens.cache/init-lookup-lite is used.
 "     	
-  [ size ]
-  	(init-lookup size)
-  	(for [ y (range 1 (inc size)) ]
-  		(redux inc-set (list [1 y])) ))
+  ( [ size use-lu max seed]
+  	(if use-lu (init-lookup size) (init-lookup-lite size))
+  	  (let [ search (if use-lu inc-set inc-set-lite) 
+  	  		 results (atom [])
+  			 trees (for [ y (range seed (inc size)) ] 
+  			 		 (if (not (done-by-max? max @results)) (do (println "invoking redux..")
+					    (reset! results (redux search (list [1 y]) @results max) ))))
+  		   ]
+		@results))
+  		
+  ( [ size ]
+  	(solutions size false 0 1))
+
+  ( [ size upto ]
+  	(solutions size false upto 1))
+  	
+  ( [ size upto seed ]
+  	(solutions size false upto seed)))

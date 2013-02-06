@@ -45,4 +45,11 @@
       (init-lookup ~size)
 					(do ~@body)))
 
+										
+(defmacro init-cache-lite-and-test [ test-name size & body ]  					
+`(deftest ~test-name
+      (init-lookup-lite ~size)
+					(do ~@body)))
+					
+
 					

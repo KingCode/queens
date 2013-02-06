@@ -65,12 +65,10 @@
 }))   
 
 
-;;
-;; Initialization in current binding of lookup with grid size (side length). Must be invoked consistently with (:size @state),
-;;
-;;(defn init-lookup [ size] (reset! lookup (merge @lookup {:size size :matrix (generate-triangle size)})))
-;;
 (defn init-lookup 
+"
+Initialization in current binding of lookup with grid size (side length). 
+"
   ( [ size startId] 
     (let [limit (inc size)]
       (reset! lookup 
@@ -86,10 +84,25 @@
   ( [ size ]
     (init-lookup size 0)))
 
-;;
-;; Computes row index of (:matrix @lookup) for argument cell
-;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+(defn init-lookup-lite
+"
+Same as init-lookup except that (:matrix lookup) is not initialized to save space.
+Must not be used with any line-related utility - use init-lookup otherwise.
+"
+  [ size ]
+    (let [ limit (inc size) ]
+    	(reset! lookup
+		  { :size size 
+            :candidates (for [ x (range 1 limit) y (range 1 limit) ]
+            						[x y])
+    	  })))
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- matrix-rowFor [ [x y]]
+"
+Computes row index of (:matrix @lookup) for argument cell
+"
     (let [ N (:size @lookup) ]
         ;; decrement by 2 to account for: first grid element removed and zero-based vector
         (- (- (* N x) (- N y)) 2)))
@@ -292,7 +305,7 @@
   
 
 (defn format-lu-matrix []
-    (format-matrix (:matrix @lookup) "  -  " " " 5))
+    (format-matrix (:matrix @lookup) (:size @lookup) "  -  " " " 5))
         
 ;;
 ;; For debugging, prints lookup state.
@@ -300,7 +313,7 @@
 (defn show-lookup []
   (let [ lu @lookup ]
     (println (str "LOOKUP: (size " (:size lu) ")\n\tLines: " (:lines lu) "\n\tCell2Lines: " (:cell2lines lu) 
-    				"\n\tBaselines: " (:baselines lu) "Matrix:\n"
+    				"\n\tBaselines: " (:baselines lu) "\n\tMatrix:\n"
           				(format-matrix (:matrix lu) (:size lu) "  -  " " " 5)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;          				

@@ -1,6 +1,6 @@
 (ns queens.util)
 
-(def UTIL_DEBUG false)
+(def UTIL_DEBUG true)
 
 (defn id-generator []
     (let [id (atom 0)]
@@ -662,6 +662,7 @@ Yields a sequence of the result of invoking (comb in e).
 (defn- redux-op
 "
 Invokes f with the first element of acc unless acc is empty, in which case result is returned.
+If max is > 0 and is the same as or less than (count results), results is returned.
 Otherwise recursion occurs according to the following scenarios in order.
 
 - If f returns true then the element is removed from acc and conj'ed to result.  
@@ -671,21 +672,25 @@ Otherwise recursion occurs according to the following scenarios in order.
 f must have arity compatible with acc elements, and must make progress over time, 
 i.e. return true or false/nil eventually.
 "
-  [ f acc results ]
+  [ f acc results max]
     (when UTIL_DEBUG 
-      (println "redux-op: ACC=" acc ", RESULTS=" results))
-	(if (empty? acc) results
-	  (let [ arg (first acc) 
+      (println "redux-op: ACC=" acc ", MAX=" max ", NUM-RESULTS=" (count results)))
+	(cond (empty? acc) results
+		  (and (< 0 max) (<= max (count results))) results
+      :else
+	    (let [ arg (first acc) 
 	  	      out (f arg) 
 	  	      racc (rest acc)
 	  	      newacc (cond (true? out) racc
 	  		 	   (empty? out) racc	  		 		
 	  		 	   :else (concat out racc))
-	              newresults (if (true? out) (conj results arg) 
-	  		 		results)
-	  		]		
-		(recur f newacc newresults))))
+	          newresults (if (true? out) (conj results arg) results)
+	  		]
+	  		(when UTIL_DEBUG
+	  			(println "redux-op: NEWACC=" newacc ", NUM-NEWRES=" (count newresults)))
+		    (recur f newacc newresults max))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		    
 (defn redux
 "
 Invokes a 1-arity function on init-arg. f is invoked repeatedly with its own outputs 
@@ -696,7 +701,10 @@ If results-coll is provided more control is possible over the collection because
 successive results are conj'ed onto it.
 "
 	([ f init-arg ]
-		(redux f init-arg []))
+		(redux f init-arg [] 0))
 		
-	([ f init-arg results-coll ]
-		(redux-op f (list init-arg) results-coll)))
+	([ f init-arg upto ]
+		(redux f init-arg [] upto))		
+		
+	([ f init-arg results-coll upto ]
+		(redux-op f (list init-arg) results-coll upto)))
