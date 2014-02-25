@@ -9,14 +9,7 @@ Given N as input, the program calculates one, or optionally up to a number of or
 
 For scalability, dynamic programming and (optionally) concurrency are used.
 
-This is an exercise to learn Clojure/leiningen and was prompted by coding challenge (https://www.interviewstreet.com/challenges/dashboard/#problem/502cb2fb4649c).
-
 STATUS
 
-Algorithm and data structures fleshed out for single threaded version.
- 
-TODOs: 
- - implement sequential algorithm
- - design and implement concurrent approach.
- - implement web app and improve console I/O to 'play' the puzzle. 
-
+This project is dormant, and needs to be redone. There is not much to do currently, except to run tests and play the game
+at the repl - see console.clj
